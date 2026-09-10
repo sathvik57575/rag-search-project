@@ -1,0 +1,21 @@
+{
+  "name": "assignmemt",
+  "version": "1.0.0",
+  "description": "Semantic search and RAG system with chunking, HF embeddings, pgvector, metadata filtering, and retrieval evaluation",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/app.js",
+    "seed": "node scripts/seed.js",
+    "eval": "node eval/evaluate.js",
+    "sample": "node eval/sample.js",
+    "db:init": "node db/init.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "pgvector": "^0.2.0",
+    "dotenv": "^16.4.5",
+    "axios": "^1.7.7"
+  }
+}

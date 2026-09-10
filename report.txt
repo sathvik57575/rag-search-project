@@ -1,0 +1,143 @@
+RAG Search Project Report
+
+
+I built a semantic search API for a small collection of documents. The project uses embeddings to search by meaning instead of only matching the exact words in the question. I also added metadata filters and a re-ranking option.
+
+The project is made with Node.js and Express. The database is PostgreSQL on Neon. I used the pgvector extension in PostgreSQL so that the document embeddings can be stored and searched in the database.
+
+Data
+
+The starting data is in data.json. It contains 100 documents. Each document has an id, title, department, text, date, and verified value. The departments include HR and Engineering and finance and operations etc.
+
+I used the document id as the main id for each original document. In the database, the content is stored as chunks. Every chunk keeps the original document id in source_doc_id column. This was useful because search happens on chunks, but updating and deleting needs to happen for the whole original document.
+
+Chunking
+
+Before making embeddings, I split each document into smaller chunks. I used a 20 percent overlap. The overlap means that some words from one chunk are repeated in the next chunk, so the meaning is not cut off too suddenly and context is preserved .
+
+I adjusted the chunk size and overlap ratio a few times while working on the project. I tried this because chunk size can change the search results. If chunks are too small, they may lose context. If they are too big, the result may contain extra information and be less focused.
+
+Embeddings
+
+I used the Hugging Face Inference API to create embeddings. The API token and model name are kept in environment variables. The embedding code sends texts in batches instead of sending every text as a separate request. It also retries when Hugging Face returns a temporary 503 or 429 error.
+
+The vectors are stored in a VECTOR(384) column. The query is also converted into an embedding before searching. PostgreSQL then compares the query vector with the stored vectors using cosine distance.
+
+Database
+
+I created a chunks table instead of a separate row for only the full document. The table stores the parent document id, metadata, chunk position, text, embedding, and timestamps.
+
+I enabled the pgvector extension and added an HNSW index for cosine similarity search. I also added indexes for source_doc_id, department, verified, and date. The HNSW index supports adding new rows without rebuilding the complete database.
+
+Search
+
+The normal search endpoint is:
+
+POST /search
+
+It receives a query and an optional k value. It embeds the query and returns the top k closest chunks. It can also filter results by department and verified status. For example, I can search only HR documents or only verified documents.
+
+The vector search uses the pgvector cosine distance operator. The results are sorted by the smallest distance first.
+
+
+Re-ranking
+
+I also added this endpoint:
+
+POST /search/rerank
+
+This first does normal vector search, but it gets a bigger candidate pool. After that, it sends the query and the candidate chunk text to a cross-encoder through Hugging Face. The cross-encoder reads the query and document together and gives a relevance score for each pair. The candidates are sorted by this score and only the requested top k results are returned.
+
+If the re-ranking model request returns a 400 or 404, the code uses a simple word matching score as a fallback. This means the endpoint can still return a result in that case.
+
+Evaluation
+
+I made 30 test questions. The questions were generated with gPT and each question has one or more correct document ids. The evaluation script runs both normal vector search and re-ranked search for every question.
+
+I used these metrics:
+
+Hit@5: whether at least one correct document was in the first five results
+  Precision@5: how many of the first five results were correct
+ Recall@5 : how many of the correct documents were found in the first five
+ MRR: how high the first correct result appeared in the list
+
+In one evaluation run, normal vector search gave these results:
+
+Basic vector search:
+{
+  'Hit@5': 0.8833333333333333,
+  'Precision@5': 0.33666666666666667,
+  'Recall@5': 0.4944444444444445,
+  'MRR': 0.6588888888888888
+}
+
+Reranked search:
+{
+  'Hit@5': 0.9166666666666666,
+  'Precision@5': 0.35333333333333334,
+  'Recall@5': 0.5277777777777778,
+  'MRR': 0.6844444444444444
+}
+
+
+In another one it gave 
+
+Basic vector search: {
+  'Hit@5': 0.9333333333333333,
+  'Precision@5': 0.36666666666666664,
+  'Recall@5': 0.5472222222222222,
+  MRR: 0.6955555555555556
+}
+Reranked search:     {
+  'Hit@5': 0.8666666666666667,
+  'Precision@5': 0.3466666666666667,
+  'Recall@5': 0.5111111111111112,
+  MRR: 0.6733333333333332
+}
+
+In that set, normal search had Hit@5 of 0.8833 and re-ranked search had Hit@5 of 0.9167. This shows that the re-ranker did not always behave the same way on every question set.
+
+So re-ranker only gave a small improvement sometimes, and sometimes it made the result worse. There are only 100 documents and most document texts are short, around 30 to 40 words. Also, I was sending a  large candidate pool to the re-ranker. Because of this, the re-ranker could move a wrong chunk above a good vector result. For this dataset, basic vector search was already working well, so the extra re-ranking step was not always useful.
+
+Adding, updating, and deleting documents
+
+I added API endpoints for changing the data without loading the complete dataset again.
+
+POST /documents
+
+This adds a new document. The text is chunked, embedded, and inserted into the database.
+
+PUT /documents/:id
+
+This updates an existing document. The code deletes the old chunks with that document id, creates new chunks, creates new embeddings, and inserts the new rows. The database operations are inside a transaction, so it rolls back if something fails.
+
+DELETE /documents/:id
+
+This deletes every chunk that has the given source document id.
+
+Using the parent document id for these operations means I do not need to manually find and change every individual chunk. New documents and updates also do not require embedding all 100 documents again.
+
+Testing
+
+I tested the API endpoints in Postman. I tested normal search, search with department and verified filters, re-ranked search, adding documents, updating documents, and deleting documents. I also ran the evaluation script against the 30 questions and saved the detailed results in eval/results.json.
+
+
+How to run it
+
+The database schema can be created with:
+node db/init.js
+
+The original data can be loaded through the seed script while the server is running:
+node scripts/seed.js data.json
+
+The evaluation can be run with:
+npm run eval
+
+
+*************************************************************************************************************
+And next I integrated LLM into this. The LLM should receives the relevant chunks retrieved from the database and uses them to answer the user's question.
+
+I stored sample questions and called them in the sample.js file and I stored the results in the results1.json file.
+
+I used gemini-3.5-flash-lite as the LLM model.
+I created a /ask route to ask questions from POSTMAN

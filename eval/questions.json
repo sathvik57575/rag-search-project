@@ -1,0 +1,226 @@
+[
+  {
+    "question": "How many paid annual leave days does the current policy provide, and how early should I apply?",
+    "relevantDocIds": [
+      "HR002"
+    ]
+  },
+  {
+    "question": "I cannot find the words annual leave in the policy. What is the current paid time off allowance and approval process?",
+    "relevantDocIds": [
+      "HR002"
+    ]
+  },
+  {
+    "question": "Which documents explain the rules for working from home, flexible schedules, and recording attendance?",
+    "relevantDocIds": [
+      "HR004",
+      "HR011",
+      "HR014"
+    ]
+  },
+  {
+    "question": "What are the steps for getting a promotion and for making a professional development plan?",
+    "relevantDocIds": [
+      "HR006",
+      "HR013"
+    ]
+  },
+  {
+    "question": "What should an employee do when they are sick, and when is medical proof needed?",
+    "relevantDocIds": [
+      "HR003"
+    ]
+  },
+  {
+    "question": "What approvals are needed for overtime, training reimbursement, and parental leave?",
+    "relevantDocIds": [
+      "HR008",
+      "HR009",
+      "HR010"
+    ]
+  },
+  {
+    "question": "What are the rules for a code change before it reaches the main branch?",
+    "relevantDocIds": [
+      "EN001",
+      "EN009",
+      "EN017"
+    ]
+  },
+  {
+    "question": "What must be prepared before a production release that changes the database?",
+    "relevantDocIds": [
+      "EN002",
+      "EN006",
+      "EN010"
+    ]
+  },
+  {
+    "question": "How should a team handle a serious outage from first response through the review afterward?",
+    "relevantDocIds": [
+      "EN004",
+      "EN008",
+      "EN016"
+    ]
+  },
+  {
+    "question": "What information belongs in a service ownership and capacity plan?",
+    "relevantDocIds": [
+      "EN012",
+      "EN014",
+      "EN016"
+    ]
+  },
+  {
+    "question": "What is the approval process for an expense, a purchase order, and a large purchase?",
+    "relevantDocIds": [
+      "FI001",
+      "FI009",
+      "FI006",
+      "FI014"
+    ]
+  },
+  {
+    "question": "How are monthly budgets, forecasts, and material differences from the budget handled?",
+    "relevantDocIds": [
+      "FI003",
+      "FI008",
+      "FI010"
+    ]
+  },
+  {
+    "question": "What checks happen before an invoice is paid and how often are supplier payments processed?",
+    "relevantDocIds": [
+      "FI004",
+      "FI015"
+    ]
+  },
+  {
+    "question": "How long should financial records be kept, and who can access tax documents?",
+    "relevantDocIds": [
+      "FI005",
+      "FI013"
+    ]
+  },
+  {
+    "question": "What is required when payroll information or a corporate card transaction changes?",
+    "relevantDocIds": [
+      "FI007",
+      "FI011"
+    ]
+  },
+  {
+    "question": "What protections are required on a laptop before it can access company systems?",
+    "relevantDocIds": [
+      "IT001",
+      "IT009",
+      "IT011",
+      "IT015"
+    ]
+  },
+  {
+    "question": "How do I request software, hardware, or system access for my job?",
+    "relevantDocIds": [
+      "IT003",
+      "IT005",
+      "IT008"
+    ]
+  },
+  {
+    "question": "What should happen if a laptop is lost or a device fails a security check?",
+    "relevantDocIds": [
+      "IT009",
+      "IT014",
+      "IT015"
+    ]
+  },
+  {
+    "question": "What are the backup and disaster recovery testing expectations for important systems?",
+    "relevantDocIds": [
+      "IT004",
+      "IT017"
+    ]
+  },
+  {
+    "question": "How is privileged access approved, protected, reviewed, and removed?",
+    "relevantDocIds": [
+      "IT016",
+      "SE011",
+      "SE003"
+    ]
+  },
+  {
+    "question": "What should I do with a suspicious email or a suspected security incident?",
+    "relevantDocIds": [
+      "SE002",
+      "SE004"
+    ]
+  },
+  {
+    "question": "How is sensitive information labeled, shared, encrypted, and eventually disposed of?",
+    "relevantDocIds": [
+      "SE005",
+      "SE009",
+      "SE014",
+      "SE013"
+    ]
+  },
+  {
+    "question": "How are security weaknesses prioritized and tracked until they are fixed?",
+    "relevantDocIds": [
+      "SE012",
+      "SE015"
+    ]
+  },
+  {
+    "question": "What evidence must be preserved during a security investigation, and how long are logs kept?",
+    "relevantDocIds": [
+      "SE008",
+      "SE016"
+    ]
+  },
+  {
+    "question": "What checks are needed before a vendor starts, and how is supplier performance reviewed later?",
+    "relevantDocIds": [
+      "OP001",
+      "SE007",
+      "OP008"
+    ]
+  },
+  {
+    "question": "How are equipment requests, inventory records, and asset disposal connected?",
+    "relevantDocIds": [
+      "OP005",
+      "OP002",
+      "OP010"
+    ]
+  },
+  {
+    "question": "What happens during an emergency handover, and where are current emergency contacts maintained?",
+    "relevantDocIds": [
+      "OP004",
+      "OP006",
+      "OP009"
+    ]
+  },
+  {
+    "question": "What are the rules for visitors, warehouse access, and suspicious packages or mail?",
+    "relevantDocIds": [
+      "OP007",
+      "OP013",
+      "OP015"
+    ]
+  },
+  {
+    "question": "What is the policy for employee stock options and equity grants?",
+    "relevantDocIds": []
+  },
+  {
+    "question": "The old leave policy says twenty four days but the newer policy says twenty eight. Which document is newer, and what should the answer use?",
+    "relevantDocIds": [
+      "HR001",
+      "HR002"
+    ]
+  }
+]

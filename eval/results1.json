@@ -1,0 +1,1005 @@
+{
+  "generatedAt": "2026-09-09T14:15:59.076Z",
+  "endpoint": "http://localhost:3000/ask",
+  "total": 12,
+  "passed": 10,
+  "failed": 2,
+  "results": [
+    {
+      "name": "direct question",
+      "question": "How many paid leave days does the current policy give employees?",
+      "expectedSources": [
+        "HR002"
+      ],
+      "retrievedSourceIds": [
+        "HR002",
+        "HR001",
+        "HR007",
+        "IT007",
+        "SE008"
+      ],
+      "answer": "The current policy (Annual Leave Policy 2025) gives full-time employees twenty-eight paid leave days for each completed year [HR002].",
+      "sources": [
+        {
+          "chunkId": "1369",
+          "documentId": "HR002",
+          "title": "Annual Leave Policy 2025",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "The 2025 annual leave policy gives full time employees twenty eight paid leave days for each completed year. Requests should be submitted at least five business days before the absence through the employee portal. The reporting manager checks staffing and approves the request. Human Resources handles exceptions and records approved carryover. This policy replaces the older twenty four day allowance.",
+          "distance": 0.24001097917295
+        },
+        {
+          "chunkId": "1366",
+          "documentId": "HR001",
+          "title": "Annual Leave Policy",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees receive twenty four annual leave days per year. Leave requests must be submitted at least three business days before the planned absence and approved by the reporting manager. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision.",
+          "distance": 0.39663874537001664
+        },
+        {
+          "chunkId": "1370",
+          "documentId": "HR002",
+          "title": "Annual Leave Policy 2025",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "records approved carryover. This policy replaces the older twenty four day allowance. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews exceptions instead of treating an",
+          "distance": 0.5804553407023496
+        },
+        {
+          "chunkId": "1435",
+          "documentId": "HR007",
+          "title": "Onboarding Checklist",
+          "department": "HR",
+          "date": "2025-01-24T18:30:00.000Z",
+          "verified": true,
+          "content": "New hires must complete security training, benefits enrollment, and policy acknowledgements within their first fourteen days. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews exceptions",
+          "distance": 0.6447730699587333
+        },
+        {
+          "chunkId": "1486",
+          "documentId": "IT007",
+          "title": "Email Retention Settings",
+          "department": "IT",
+          "date": "2025-04-12T18:30:00.000Z",
+          "verified": true,
+          "content": "Business emails are retained for three years unless legal requirements specify otherwise, including longer holds connected to investigations or litigation. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated when",
+          "distance": 0.6956049864763016
+        },
+        {
+          "chunkId": "1619",
+          "documentId": "SE008",
+          "title": "party",
+          "department": "Security",
+          "date": "2025-05-14T18:30:00.000Z",
+          "verified": true,
+          "content": "when employees are bored, they can drink and party",
+          "distance": 0.7020775942136975
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": false,
+      "passed": false,
+      "startedAt": "2026-09-09T14:10:47.612Z"
+    },
+    {
+      "name": "paraphrased question",
+      "question": "How much advance warning do I need before taking time off?",
+      "expectedSources": [
+        "HR002"
+      ],
+      "retrievedSourceIds": [
+        "EN007",
+        "EN006",
+        "EN002",
+        "EN008",
+        "EN004",
+        "EN005"
+      ],
+      "answer": "I don't know based on the available documents.",
+      "sources": [
+        {
+          "chunkId": "1452",
+          "documentId": "EN007",
+          "title": "Architecture Review Process",
+          "department": "Engineering",
+          "date": "2025-02-12T18:30:00.000Z",
+          "verified": true,
+          "content": "risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5817386161244733
+        },
+        {
+          "chunkId": "1450",
+          "documentId": "EN006",
+          "title": "Database Migration Rules",
+          "department": "Engineering",
+          "date": "2025-02-10T18:30:00.000Z",
+          "verified": false,
+          "content": "with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5977996827483358
+        },
+        {
+          "chunkId": "1442",
+          "documentId": "EN002",
+          "title": "Deployment Procedure",
+          "department": "Engineering",
+          "date": "2025-02-02T18:30:00.000Z",
+          "verified": true,
+          "content": "with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5977997721552977
+        },
+        {
+          "chunkId": "1454",
+          "documentId": "EN008",
+          "title": "Monitoring Standards",
+          "department": "Engineering",
+          "date": "2025-02-14T18:30:00.000Z",
+          "verified": true,
+          "content": "their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.6083277580640373
+        },
+        {
+          "chunkId": "1446",
+          "documentId": "EN004",
+          "title": "Incident Response Process",
+          "department": "Engineering",
+          "date": "2025-02-06T18:30:00.000Z",
+          "verified": true,
+          "content": "documented with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.6147337670703584
+        },
+        {
+          "chunkId": "1448",
+          "documentId": "EN005",
+          "title": "Testing Requirements",
+          "department": "Engineering",
+          "date": "2025-02-08T18:30:00.000Z",
+          "verified": true,
+          "content": "documented with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.6147337670703584
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": false,
+      "answerPassed": false,
+      "passed": false,
+      "startedAt": "2026-09-09T14:11:49.103Z"
+    },
+    {
+      "name": "several HR documents",
+      "question": "What rules cover working from home, flexible schedules, and attendance records?",
+      "expectedSources": [
+        "HR004",
+        "HR011",
+        "HR014"
+      ],
+      "retrievedSourceIds": [
+        "HR014",
+        "HR002",
+        "HR011",
+        "OP014",
+        "HR003",
+        "OP013"
+      ],
+      "answer": "Based on the provided documents, the rules covering remote work, flexible schedules, and attendance records are as follows:\n\n* **Working from home (Remote Work):** Remote employees must be available between 10 AM and 4 PM, attend scheduled meetings, and maintain secure access to company resources [HR003]. Additionally, employees must use the approved HR process, keep their manager or HR contact informed, and ensure records include the request, responsible person, dates, supporting evidence, and final decision [HR003].\n* **Flexible schedules (Flexible Work Arrangements):** Flexible work arrangements require a written request, business justification, manager approval, and periodic review to confirm that performance and operational coverage remain satisfactory [HR011]. Employees must also use the approved HR process, keep their manager or HR contact informed, and ensure proper documentation of the request, responsible person, dates, supporting evidence, and final decision [HR011]. Recurring schedule changes affecting team coverage require manager approval [HR014].\n* **Attendance records:** Employees must record their working hours accurately, report attendance corrections promptly, and obtain manager approval for recurring schedule changes affecting team coverage [HR014]. This requires using the approved HR process, keeping the manager or HR contact informed, and maintaining records that include the request, responsible person, dates, supporting evidence, and final decision [HR014].",
+      "sources": [
+        {
+          "chunkId": "1372",
+          "documentId": "HR014",
+          "title": "Attendance Recording Policy",
+          "department": "HR",
+          "date": "2025-08-31T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees must record working hours accurately, report attendance corrections promptly, and obtain manager approval for recurring schedule changes affecting team coverage. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process",
+          "distance": 0.4384507275551114
+        },
+        {
+          "chunkId": "1370",
+          "documentId": "HR002",
+          "title": "Annual Leave Policy 2025",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "records approved carryover. This policy replaces the older twenty four day allowance. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews exceptions instead of treating an",
+          "distance": 0.5398090618905687
+        },
+        {
+          "chunkId": "1543",
+          "documentId": "HR011",
+          "title": "Flexible Work Arrangement Requests",
+          "department": "HR",
+          "date": "2025-07-04T18:30:00.000Z",
+          "verified": true,
+          "content": "Flexible work arrangements require a written request, business justification, manager approval, and periodic review to confirm performance and operational coverage remain satisfactory. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the",
+          "distance": 0.5404966151418311
+        },
+        {
+          "chunkId": "1613",
+          "documentId": "OP014",
+          "title": "Meeting Room Booking Rules",
+          "department": "Operations",
+          "date": "2025-08-26T18:30:00.000Z",
+          "verified": true,
+          "content": "Meeting rooms must be reserved through the shared calendar, released when unused, and left clean with equipment returned after every meeting. The operations owner records the request, location, responsible person, urgency, expected result, and completion evidence. Work is prioritized using safety, business impact, deadlines, and available resources. Requests and handovers stay in the approved system so another person can continue",
+          "distance": 0.554961337001282
+        },
+        {
+          "chunkId": "1426",
+          "documentId": "HR003",
+          "title": "Remote Work Guidelines",
+          "department": "HR",
+          "date": "2025-01-14T18:30:00.000Z",
+          "verified": true,
+          "content": "Remote employees must be available between 10 AM and 4 PM, attend scheduled meetings, and maintain secure access to company resources. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process",
+          "distance": 0.5674328634907925
+        },
+        {
+          "chunkId": "1611",
+          "documentId": "OP013",
+          "title": "Reception Visitor Policy",
+          "department": "Operations",
+          "date": "2025-08-24T18:30:00.000Z",
+          "verified": true,
+          "content": "Visitors must sign in at reception, display temporary identification, remain accompanied in restricted areas, and sign out before leaving the premises. The operations owner records the request, location, responsible person, urgency, expected result, and completion evidence. Work is prioritized using safety, business impact, deadlines, and available resources. Requests and handovers stay in the approved system so another person can continue",
+          "distance": 0.5815476428539958
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:12:34.280Z"
+    },
+    {
+      "name": "information across engineering documents",
+      "question": "What needs to happen before, during, and after a production database change?",
+      "expectedSources": [
+        "EN002",
+        "EN006",
+        "EN010"
+      ],
+      "retrievedSourceIds": [
+        "EN006",
+        "EN002",
+        "EN016",
+        "EN001",
+        "EN008",
+        "EN015"
+      ],
+      "answer": "Based on the available documents, schema changes must include rollback instructions and be tested in staging before production deployment [EN006]. Additionally, for changes that can affect production, they should be reviewed, tested, and monitored, and be easy to roll back [EN006]. \n\nI don't know based on the available documents what specifically needs to happen *during* or *after* a production database change beyond these general rules.",
+      "sources": [
+        {
+          "chunkId": "1449",
+          "documentId": "EN006",
+          "title": "Database Migration Rules",
+          "department": "Engineering",
+          "date": "2025-02-10T18:30:00.000Z",
+          "verified": false,
+          "content": "Schema changes must include rollback instructions and be tested in staging before production deployment. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver, temporary control, and follow up date so they",
+          "distance": 0.38307315555868693
+        },
+        {
+          "chunkId": "1441",
+          "documentId": "EN002",
+          "title": "Deployment Procedure",
+          "department": "Engineering",
+          "date": "2025-02-02T18:30:00.000Z",
+          "verified": true,
+          "content": "Production deployments require successful testing, change approval, and a documented rollback plan before release. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver, temporary control, and follow up date so they",
+          "distance": 0.41528068230391935
+        },
+        {
+          "chunkId": "1388",
+          "documentId": "EN016",
+          "title": "Service Documentation Standard",
+          "department": "Engineering",
+          "date": "2025-09-12T18:30:00.000Z",
+          "verified": true,
+          "content": "Production services require current documentation covering purpose, ownership, deployment steps, dependencies, operational checks, common troubleshooting actions, and escalation contacts for on-call teams. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver,",
+          "distance": 0.4656872271615746
+        },
+        {
+          "chunkId": "1439",
+          "documentId": "EN001",
+          "title": "Code Review Standards",
+          "department": "Engineering",
+          "date": "2025-01-31T18:30:00.000Z",
+          "verified": true,
+          "content": "All code changes require approval from at least one qualified engineer before merging into the main branch. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver, temporary control, and follow up",
+          "distance": 0.515051202331589
+        },
+        {
+          "chunkId": "1453",
+          "documentId": "EN008",
+          "title": "Monitoring Standards",
+          "department": "Engineering",
+          "date": "2025-02-14T18:30:00.000Z",
+          "verified": true,
+          "content": "All production services must expose health checks and generate alerts for critical failures. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver, temporary control, and follow up date so they do",
+          "distance": 0.5324614524061768
+        },
+        {
+          "chunkId": "1385",
+          "documentId": "EN015",
+          "title": "Dependency Update Policy",
+          "department": "Engineering",
+          "date": "2025-09-10T18:30:00.000Z",
+          "verified": true,
+          "content": "Teams must monitor third party dependencies, prioritize security updates, test upgrades in staging, and record exceptions requiring delayed maintenance with accountable owners. The team records the owner, scope, dependencies, checks, and result in the normal engineering system. Changes should be reviewed, tested, monitored, and easy to roll back when they can affect production. Exceptions are documented with their risk, approver,",
+          "distance": 0.5336961925354158
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:12:40.700Z"
+    },
+    {
+      "name": "information across finance documents",
+      "question": "How are expenses approved and what evidence is needed before reimbursement?",
+      "expectedSources": [
+        "FI001",
+        "FI014"
+      ],
+      "retrievedSourceIds": [
+        "FI001",
+        "FI014",
+        "FI012",
+        "FI009",
+        "FI002",
+        "FI003"
+      ],
+      "answer": "Expenses are approved based on delegated spending limits, appropriate cost center information, and escalation to senior managers when thresholds are exceeded [FI014]. Additionally, the amount and business reason are checked against the approved budget and delegated authority [FI012]. Before money is committed, the requester must provide a business purpose, amount, budget code, supporting evidence, and the required approval [FI001, FI014, FI009, FI002, FI003]. \n\nTo receive reimbursement for approved expenses, employees must submit itemized receipts within thirty days [FI001].",
+      "sources": [
+        {
+          "chunkId": "1455",
+          "documentId": "FI001",
+          "title": "Expense Reimbursement Policy",
+          "department": "Finance",
+          "date": "2025-02-28T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees must submit itemized receipts within thirty days to receive reimbursement for approved expenses. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation can delay processing until the responsible",
+          "distance": 0.2896414226507179
+        },
+        {
+          "chunkId": "1394",
+          "documentId": "FI014",
+          "title": "Expense Approval Matrix",
+          "department": "Finance",
+          "date": "2025-09-16T18:30:00.000Z",
+          "verified": true,
+          "content": "Expense approvals follow delegated spending limits, require appropriate cost center information, and escalate to senior managers when thresholds are exceeded. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation",
+          "distance": 0.338264485053272
+        },
+        {
+          "chunkId": "1576",
+          "documentId": "FI012",
+          "title": "Cash Forecasting Procedure",
+          "department": "Finance",
+          "date": "2025-07-26T18:30:00.000Z",
+          "verified": true,
+          "content": "approving when practical, and investigates unusual items. A missing receipt or late explanation can delay processing until the responsible manager resolves it. The amount and business reason are checked against the approved budget and delegated authority. Finance records the approval and resolves differences before payment or reporting. Splitting a request, changing a record without evidence, or approving personal spending is",
+          "distance": 0.4222548696690912
+        },
+        {
+          "chunkId": "1566",
+          "documentId": "FI009",
+          "title": "Purchase Order Requirements",
+          "department": "Finance",
+          "date": "2025-07-20T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees must obtain an approved purchase order before committing company funds, except for documented emergency purchases authorized by finance leadership. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation",
+          "distance": 0.4269336549122704
+        },
+        {
+          "chunkId": "1457",
+          "documentId": "FI002",
+          "title": "Travel Expense Guidelines",
+          "department": "Finance",
+          "date": "2025-03-02T18:30:00.000Z",
+          "verified": true,
+          "content": "Airfare and hotel bookings must comply with approved travel budgets and company spending limits. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation can delay processing until the responsible",
+          "distance": 0.4368387796378773
+        },
+        {
+          "chunkId": "1459",
+          "documentId": "FI003",
+          "title": "Budget Approval Workflow",
+          "department": "Finance",
+          "date": "2025-03-04T18:30:00.000Z",
+          "verified": true,
+          "content": "Department budgets require review by finance managers and approval from senior leadership. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation can delay processing until the responsible manager resolves",
+          "distance": 0.44293899024259764
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:13:35.058Z"
+    },
+    {
+      "name": "missing information",
+      "question": "What is the company policy for employee stock options and equity grants?",
+      "expectedSources": [],
+      "retrievedSourceIds": [
+        "IT009",
+        "FI009",
+        "IT008",
+        "IT002",
+        "IT011",
+        "HR011"
+      ],
+      "answer": "I don't know based on the available documents.",
+      "sources": [
+        {
+          "chunkId": "1580",
+          "documentId": "IT009",
+          "title": "Device Encryption Standard",
+          "department": "IT",
+          "date": "2025-07-31T18:30:00.000Z",
+          "verified": true,
+          "content": "Company laptops and mobile devices must use full disk encryption, secure screen locking, and centrally managed settings before accessing business systems. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.6410361421417039
+        },
+        {
+          "chunkId": "1566",
+          "documentId": "FI009",
+          "title": "Purchase Order Requirements",
+          "department": "Finance",
+          "date": "2025-07-20T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees must obtain an approved purchase order before committing company funds, except for documented emergency purchases authorized by finance leadership. The requester provides a business purpose, amount, budget code, supporting evidence, and the required approval before money is committed. Finance keeps an audit trail, separates requesting from approving when practical, and investigates unusual items. A missing receipt or late explanation",
+          "distance": 0.6582438247872537
+        },
+        {
+          "chunkId": "1488",
+          "documentId": "IT008",
+          "title": "Access Request Procedure",
+          "department": "IT",
+          "date": "2025-04-14T18:30:00.000Z",
+          "verified": true,
+          "content": "System access requests require approval from both the employee manager and system owner, with permissions limited to the employee's documented responsibilities. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.6709806821042501
+        },
+        {
+          "chunkId": "1473",
+          "documentId": "IT002",
+          "title": "VPN Access Procedure",
+          "department": "IT",
+          "date": "2025-04-02T18:30:00.000Z",
+          "verified": true,
+          "content": "Remote employees must use the corporate VPN when accessing internal systems from outside the office, especially while using untrusted public networks. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.6735090516063287
+        },
+        {
+          "chunkId": "1584",
+          "documentId": "IT011",
+          "title": "Operating System Update Policy",
+          "department": "IT",
+          "date": "2025-08-04T18:30:00.000Z",
+          "verified": true,
+          "content": "Supported operating systems must receive security updates promptly, while exceptions require documented risk acceptance and an approved remediation schedule reviewed by IT leadership. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed",
+          "distance": 0.7007096827453185
+        },
+        {
+          "chunkId": "1545",
+          "documentId": "HR011",
+          "title": "Flexible Work Arrangement Requests",
+          "department": "HR",
+          "date": "2025-07-04T18:30:00.000Z",
+          "verified": true,
+          "content": "a decision but does not automatically promise a promotion, payment, or future role.",
+          "distance": 0.7126204285806543
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:13:41.800Z"
+    },
+    {
+      "name": "conflicting old and new policy",
+      "question": "The old leave policy says 24 days and the newer one says 28 days. Which allowance is current?",
+      "expectedSources": [
+        "HR001",
+        "HR002"
+      ],
+      "retrievedSourceIds": [
+        "HR002",
+        "HR001",
+        "IT007",
+        "HR009",
+        "IT006"
+      ],
+      "answer": "The current allowance is 28 paid leave days, as the 2025 annual leave policy replaces the older twenty-four day allowance [HR002, HR003].",
+      "sources": [
+        {
+          "chunkId": "1369",
+          "documentId": "HR002",
+          "title": "Annual Leave Policy 2025",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "The 2025 annual leave policy gives full time employees twenty eight paid leave days for each completed year. Requests should be submitted at least five business days before the absence through the employee portal. The reporting manager checks staffing and approves the request. Human Resources handles exceptions and records approved carryover. This policy replaces the older twenty four day allowance.",
+          "distance": 0.3489024999374152
+        },
+        {
+          "chunkId": "1366",
+          "documentId": "HR001",
+          "title": "Annual Leave Policy",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees receive twenty four annual leave days per year. Leave requests must be submitted at least three business days before the planned absence and approved by the reporting manager. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision.",
+          "distance": 0.522419554970895
+        },
+        {
+          "chunkId": "1370",
+          "documentId": "HR002",
+          "title": "Annual Leave Policy 2025",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "records approved carryover. This policy replaces the older twenty four day allowance. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews exceptions instead of treating an",
+          "distance": 0.5531322163523192
+        },
+        {
+          "chunkId": "1486",
+          "documentId": "IT007",
+          "title": "Email Retention Settings",
+          "department": "IT",
+          "date": "2025-04-12T18:30:00.000Z",
+          "verified": true,
+          "content": "Business emails are retained for three years unless legal requirements specify otherwise, including longer holds connected to investigations or litigation. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated when",
+          "distance": 0.7148896199596362
+        },
+        {
+          "chunkId": "1538",
+          "documentId": "HR009",
+          "title": "Parental Leave Policy",
+          "department": "HR",
+          "date": "2025-06-30T18:30:00.000Z",
+          "verified": true,
+          "content": "Eligible employees may take parental leave after a qualifying birth or adoption, provided they notify Human Resources and submit supporting documentation before leave begins. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks",
+          "distance": 0.72253951757675
+        },
+        {
+          "chunkId": "1484",
+          "documentId": "IT006",
+          "title": "Laptop Replacement Program",
+          "department": "IT",
+          "date": "2025-04-10T18:30:00.000Z",
+          "verified": false,
+          "content": "Company laptops older than four years qualify for replacement after manager approval and confirmation that repair or upgrade is not practical. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.7515684066333268
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:14:29.799Z"
+    },
+    {
+      "name": "security paraphrase",
+      "question": "What should I do if I think a message is a phishing attempt?",
+      "expectedSources": [
+        "SE002"
+      ],
+      "retrievedSourceIds": [
+        "SE002",
+        "SE003",
+        "SE004",
+        "IT001",
+        "SE012"
+      ],
+      "answer": "If you think a message is a phishing attempt, you should report suspicious emails through the approved reporting button or security channel, report suspicious activity quickly, preserve useful evidence, and use approved tools [SE001].",
+      "sources": [
+        {
+          "chunkId": "1493",
+          "documentId": "SE002",
+          "title": "Phishing Awareness Program",
+          "department": "Security",
+          "date": "2025-05-02T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees complete phishing awareness training every quarter and report suspicious emails through the approved reporting button or security channel. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use approved tools. Exceptions",
+          "distance": 0.4727008749098869
+        },
+        {
+          "chunkId": "1496",
+          "documentId": "SE003",
+          "title": "Access Review Procedure",
+          "department": "Security",
+          "date": "2025-05-04T18:30:00.000Z",
+          "verified": true,
+          "content": "report suspicious activity quickly, preserve useful evidence, and use approved tools. Exceptions are limited in time and include a responsible person. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit",
+          "distance": 0.6918080975780598
+        },
+        {
+          "chunkId": "1498",
+          "documentId": "SE004",
+          "title": "Security Incident Reporting",
+          "department": "Security",
+          "date": "2025-05-06T18:30:00.000Z",
+          "verified": true,
+          "content": "Security incidents must be reported to the security team within one hour of discovery, even when the full scope or business impact remains uncertain. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence,",
+          "distance": 0.739120325315046
+        },
+        {
+          "chunkId": "1471",
+          "documentId": "IT001",
+          "title": "Password Policy",
+          "department": "IT",
+          "date": "2025-03-31T18:30:00.000Z",
+          "verified": true,
+          "content": "Passwords must contain at least twelve characters and be changed every ninety days, while reused or previously compromised passwords are prohibited. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.7611258243507873
+        },
+        {
+          "chunkId": "1600",
+          "documentId": "SE012",
+          "title": "Vulnerability Management Process",
+          "department": "Security",
+          "date": "2025-08-16T18:30:00.000Z",
+          "verified": true,
+          "content": "Security vulnerabilities are prioritized by severity, assigned to system owners, tracked to remediation, and reviewed during regular risk meetings with leadership. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use approved",
+          "distance": 0.763544641838808
+        },
+        {
+          "chunkId": "1494",
+          "documentId": "SE002",
+          "title": "Phishing Awareness Program",
+          "department": "Security",
+          "date": "2025-05-02T18:30:00.000Z",
+          "verified": true,
+          "content": "report suspicious activity quickly, preserve useful evidence, and use approved tools. Exceptions are limited in time and include a responsible person. The manager uses evidence from the relevant period and discusses the result with the employee. A completed activity or good result supports a decision but does not automatically promise a promotion, payment, or future role.",
+          "distance": 0.7648327140360516
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:15:26.759Z"
+    },
+    {
+      "name": "security evidence and logs",
+      "question": "During an investigation, how should evidence and security logs be handled?",
+      "expectedSources": [
+        "SE008",
+        "SE016"
+      ],
+      "retrievedSourceIds": [
+        "SE016",
+        "SE004",
+        "SE015",
+        "SE013",
+        "SE005",
+        "SE007"
+      ],
+      "answer": "During security investigations, relevant logs and evidence must be preserved, access must be documented, and collection must be performed without altering the original records during legal review [SE016].",
+      "sources": [
+        {
+          "chunkId": "1421",
+          "documentId": "SE016",
+          "title": "Incident Evidence Preservation",
+          "department": "Security",
+          "date": "2025-10-06T18:30:00.000Z",
+          "verified": true,
+          "content": "During security investigations, relevant logs and evidence must be preserved, access documented, and collection performed without altering original records during legal review. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use",
+          "distance": 0.23725790340571118
+        },
+        {
+          "chunkId": "1498",
+          "documentId": "SE004",
+          "title": "Security Incident Reporting",
+          "department": "Security",
+          "date": "2025-05-06T18:30:00.000Z",
+          "verified": true,
+          "content": "Security incidents must be reported to the security team within one hour of discovery, even when the full scope or business impact remains uncertain. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence,",
+          "distance": 0.42805230606693434
+        },
+        {
+          "chunkId": "1418",
+          "documentId": "SE015",
+          "title": "Security Risk Register",
+          "department": "Security",
+          "date": "2025-10-04T18:30:00.000Z",
+          "verified": true,
+          "content": "Security risks are recorded with likelihood, impact, owners, treatment plans, and review dates so leadership can monitor outstanding exposure and progress. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use approved",
+          "distance": 0.4706621292825436
+        },
+        {
+          "chunkId": "1603",
+          "documentId": "SE013",
+          "title": "Secure Disposal Standard",
+          "department": "Security",
+          "date": "2025-08-18T18:30:00.000Z",
+          "verified": false,
+          "content": "Storage media containing company information must be securely erased or physically destroyed, with disposal evidence retained for audit purposes and compliance audits. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use",
+          "distance": 0.4756876953561012
+        },
+        {
+          "chunkId": "1502",
+          "documentId": "SE005",
+          "title": "Data Classification Policy",
+          "department": "Security",
+          "date": "2025-05-08T18:30:00.000Z",
+          "verified": true,
+          "content": "Staff report suspicious activity quickly, preserve useful evidence, and use approved tools. Exceptions are limited in time and include a responsible person. The document gives the normal steps, ownership, evidence, and review expectations so that the process can be followed consistently and explained later.",
+          "distance": 0.47625921595868526
+        },
+        {
+          "chunkId": "1506",
+          "documentId": "SE007",
+          "title": "Vendor Security Assessment",
+          "department": "Security",
+          "date": "2025-05-12T18:30:00.000Z",
+          "verified": true,
+          "content": "Third party vendors handling sensitive data undergo annual security assessments covering controls, incidents, access practices, and remediation of identified weaknesses. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use approved tools.",
+          "distance": 0.5054601886064093
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:15:42.758Z"
+    },
+    {
+      "name": "IT access process",
+      "question": "What approvals are needed before a user receives access to a system?",
+      "expectedSources": [
+        "IT008"
+      ],
+      "retrievedSourceIds": [
+        "IT008",
+        "IT016",
+        "IT003",
+        "OP010",
+        "SE003",
+        "IT011"
+      ],
+      "answer": "System access requests require approval from both the employee manager and the system owner [IT008].",
+      "sources": [
+        {
+          "chunkId": "1488",
+          "documentId": "IT008",
+          "title": "Access Request Procedure",
+          "department": "IT",
+          "date": "2025-04-14T18:30:00.000Z",
+          "verified": true,
+          "content": "System access requests require approval from both the employee manager and system owner, with permissions limited to the employee's documented responsibilities. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated",
+          "distance": 0.2666634003325171
+        },
+        {
+          "chunkId": "1410",
+          "documentId": "IT016",
+          "title": "Privileged Account Requests",
+          "department": "IT",
+          "date": "2025-09-28T18:30:00.000Z",
+          "verified": true,
+          "content": "Administrative access requires a documented business need, system owner approval, time limitation, and periodic confirmation that elevated permissions remain necessary. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated when",
+          "distance": 0.3417896620819202
+        },
+        {
+          "chunkId": "1475",
+          "documentId": "IT003",
+          "title": "Software Installation Requests",
+          "department": "IT",
+          "date": "2025-04-04T18:30:00.000Z",
+          "verified": true,
+          "content": "New software installations require business justification and approval from the IT department, followed by security review for sensitive applications. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed or updated when circumstances",
+          "distance": 0.3896742130102604
+        },
+        {
+          "chunkId": "1536",
+          "documentId": "OP010",
+          "title": "Asset Disposal Guidelines",
+          "department": "Operations",
+          "date": "2025-06-18T18:30:00.000Z",
+          "verified": true,
+          "content": "Requests and handovers stay in the approved system so another person can continue the work. Repeated problems receive corrective actions rather than being closed without learning. The control is intended to reduce unauthorized access, loss, and delayed response. Staff should use approved channels, limit information to the people who need it, and report uncertainty early so Security can contain the",
+          "distance": 0.4007490634471641
+        },
+        {
+          "chunkId": "1495",
+          "documentId": "SE003",
+          "title": "Access Review Procedure",
+          "department": "Security",
+          "date": "2025-05-04T18:30:00.000Z",
+          "verified": true,
+          "content": "User permissions are reviewed every six months to ensure appropriate access levels, remove unnecessary privileges, and document manager confirmation. The owner evaluates sensitivity, likelihood, impact, access, and evidence before choosing a control. Security records the decision and reviews it when the system, threat, or business purpose changes. Staff report suspicious activity quickly, preserve useful evidence, and use approved tools. Exceptions",
+          "distance": 0.4011226235816451
+        },
+        {
+          "chunkId": "1584",
+          "documentId": "IT011",
+          "title": "Operating System Update Policy",
+          "department": "IT",
+          "date": "2025-08-04T18:30:00.000Z",
+          "verified": true,
+          "content": "Supported operating systems must receive security updates promptly, while exceptions require documented risk acceptance and an approved remediation schedule reviewed by IT leadership. The employee opens a request with a clear business need and waits for an authorized IT administrator to complete the change. IT checks security, ownership, cost, and least privilege. Devices and accounts are recorded, reviewed, and removed",
+          "distance": 0.4218152086303878
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:15:52.549Z"
+    },
+    {
+      "name": "operations and continuity",
+      "question": "How often are business continuity plans reviewed and tested?",
+      "expectedSources": [
+        "OP004"
+      ],
+      "retrievedSourceIds": [
+        "OP004",
+        "EN003",
+        "EN005",
+        "EN004",
+        "EN006",
+        "EN002"
+      ],
+      "answer": "Business continuity plans are reviewed annually and tested through simulation exercises involving key personnel, communication channels, facilities, and recovery procedures [OP004].",
+      "sources": [
+        {
+          "chunkId": "1520",
+          "documentId": "OP004",
+          "title": "Business Continuity Plan",
+          "department": "Operations",
+          "date": "2025-06-06T18:30:00.000Z",
+          "verified": true,
+          "content": "Business continuity plans are reviewed annually and tested through simulation exercises involving key personnel, communication channels, facilities, and recovery procedures. The operations owner records the request, location, responsible person, urgency, expected result, and completion evidence. Work is prioritized using safety, business impact, deadlines, and available resources. Requests and handovers stay in the approved system so another person can continue the",
+          "distance": 0.30368341825505607
+        },
+        {
+          "chunkId": "1444",
+          "documentId": "EN003",
+          "title": "API Versioning Policy",
+          "department": "Engineering",
+          "date": "2025-02-04T18:30:00.000Z",
+          "verified": true,
+          "content": "their risk, approver, temporary control, and follow up date so they do not disappear from planning. The document gives the normal steps, ownership, evidence, and review expectations so that the process can be followed consistently and explained later.",
+          "distance": 0.5502496093660361
+        },
+        {
+          "chunkId": "1448",
+          "documentId": "EN005",
+          "title": "Testing Requirements",
+          "department": "Engineering",
+          "date": "2025-02-08T18:30:00.000Z",
+          "verified": true,
+          "content": "documented with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5515590936874804
+        },
+        {
+          "chunkId": "1446",
+          "documentId": "EN004",
+          "title": "Incident Response Process",
+          "department": "Engineering",
+          "date": "2025-02-06T18:30:00.000Z",
+          "verified": true,
+          "content": "documented with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5515590936874804
+        },
+        {
+          "chunkId": "1450",
+          "documentId": "EN006",
+          "title": "Database Migration Rules",
+          "department": "Engineering",
+          "date": "2025-02-10T18:30:00.000Z",
+          "verified": false,
+          "content": "with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.559788005345702
+        },
+        {
+          "chunkId": "1442",
+          "documentId": "EN002",
+          "title": "Deployment Procedure",
+          "department": "Engineering",
+          "date": "2025-02-02T18:30:00.000Z",
+          "verified": true,
+          "content": "with their risk, approver, temporary control, and follow up date so they do not disappear from planning. The owner keeps the decision and evidence with the work item, explains important tradeoffs, and follows up on failed checks. A rushed exception is temporary and still needs later review so reliability is not traded away without an explicit decision.",
+          "distance": 0.5597880351480253
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:15:54.812Z"
+    },
+    {
+      "name": "unsupported specific detail",
+      "question": "What is the exact salary increase percentage for employees who complete training?",
+      "expectedSources": [],
+      "retrievedSourceIds": [
+        "HR010",
+        "HR007",
+        "HR005",
+        "SE001",
+        "HR001",
+        "HR008"
+      ],
+      "answer": "I don't know based on the available documents.",
+      "sources": [
+        {
+          "chunkId": "1541",
+          "documentId": "HR010",
+          "title": "Training Reimbursement Policy",
+          "department": "HR",
+          "date": "2025-07-02T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees may request reimbursement for approved professional courses after receiving manager approval and submitting receipts within thirty days of completing training. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process",
+          "distance": 0.7213146984577159
+        },
+        {
+          "chunkId": "1435",
+          "documentId": "HR007",
+          "title": "Onboarding Checklist",
+          "department": "HR",
+          "date": "2025-01-24T18:30:00.000Z",
+          "verified": true,
+          "content": "New hires must complete security training, benefits enrollment, and policy acknowledgements within their first fourteen days. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews exceptions",
+          "distance": 0.7496124804481887
+        },
+        {
+          "chunkId": "1430",
+          "documentId": "HR005",
+          "title": "Employee Referral Program",
+          "department": "HR",
+          "date": "2025-01-19T18:30:00.000Z",
+          "verified": false,
+          "content": "Employees who refer successful candidates receive a referral bonus after the new hire completes six months of employment. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and",
+          "distance": 0.7763224973486361
+        },
+        {
+          "chunkId": "1492",
+          "documentId": "SE001",
+          "title": "Multi Factor Authentication Policy",
+          "department": "Security",
+          "date": "2025-04-30T18:30:00.000Z",
+          "verified": true,
+          "content": "not assume that telling a coworker is the same as completing the official process.",
+          "distance": 0.7764369233586234
+        },
+        {
+          "chunkId": "1368",
+          "documentId": "HR001",
+          "title": "Annual Leave Policy",
+          "department": "HR",
+          "date": "2025-01-09T18:30:00.000Z",
+          "verified": true,
+          "content": "change is recorded, and who handles an exception. The employee should not assume that telling a coworker is the same as completing the official process.",
+          "distance": 0.7910581455722783
+        },
+        {
+          "chunkId": "1437",
+          "documentId": "HR008",
+          "title": "Promotion Eligibility Criteria",
+          "department": "HR",
+          "date": "2025-01-27T18:30:00.000Z",
+          "verified": true,
+          "content": "Employees become eligible for promotion consideration after twelve months in their current role and satisfactory performance ratings. The employee must use the approved Human Resources process and keep the manager or HR contact informed. The record should include the request, responsible person, dates, supporting evidence, and final decision. HR protects personal information, checks that the process is fair, and reviews",
+          "distance": 0.7937158793210969
+        }
+      ],
+      "model": "gemini-3.5-flash-lite",
+      "sourcePassed": true,
+      "answerPassed": true,
+      "passed": true,
+      "startedAt": "2026-09-09T14:15:56.944Z"
+    }
+  ]
+}
