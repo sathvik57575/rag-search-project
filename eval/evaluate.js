@@ -124,4 +124,19 @@ Reranked search:     {
   MRR: 0.7416666666666667
 }
 
+
+for local model
+
+Basic vector search: {
+  'Hit@5': 0.9,
+  'Precision@5': 0.41333333333333344,
+  'Recall@5': 0.8555555555555556,
+  MRR: 0.8666666666666667
+}
+Reranked search:     {
+  'Hit@5': 0.8666666666666667,
+  'Precision@5': 0.36666666666666675,
+  'Recall@5': 0.7666666666666668,
+  MRR: 0.7388888888888888
+}
 */

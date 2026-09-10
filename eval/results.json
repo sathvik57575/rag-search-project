@@ -1,6 +1,6 @@
 {
   "k": 5,
-  "timestamp": "2026-09-09T14:09:03.452Z",
+  "timestamp": "2026-09-10T09:47:16.713Z",
   "basic": {
     "perQuestion": [
       {
@@ -84,7 +84,7 @@
           "HR012",
           "HR012",
           "HR014",
-          "SE011"
+          "SE007"
         ],
         "hitAtK": 0,
         "precisionAtK": 0,
@@ -121,8 +121,8 @@
           "EN001",
           "EN009",
           "HR001",
-          "EN002",
-          "EN006"
+          "EN006",
+          "EN002"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -159,8 +159,8 @@
           "EN004",
           "EN017",
           "EN008",
-          "SE003",
-          "FI011"
+          "HR006",
+          "SE003"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -254,7 +254,7 @@
           "FI013",
           "OP010",
           "SE013",
-          "SE006"
+          "HR017"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -364,8 +364,8 @@
         ],
         "retrievedDocIds": [
           "IT016",
-          "IT010",
           "IT007",
+          "IT010",
           "IT005",
           "IT016"
         ],
@@ -437,15 +437,15 @@
           "SE016"
         ],
         "retrievedDocIds": [
+          "SE008",
           "SE016",
           "SE013",
           "SE004",
-          "FI005",
-          "SE014"
+          "FI005"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.2,
-        "recallAtK": 0.5,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
         "reciprocalRank": 1
       },
       {
@@ -497,8 +497,8 @@
           "OP009",
           "OP006",
           "OP013",
-          "OP015",
-          "OP006"
+          "OP006",
+          "OP015"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.6,
@@ -560,8 +560,8 @@
     ],
     "aggregate": {
       "Hit@5": 0.9,
-      "Precision@5": 0.4066666666666668,
-      "Recall@5": 0.8388888888888889,
+      "Precision@5": 0.41333333333333344,
+      "Recall@5": 0.8555555555555556,
       "MRR": 0.8666666666666667
     }
   },
@@ -591,9 +591,9 @@
         ],
         "retrievedDocIds": [
           "HR002",
-          "HR002",
           "HR001",
-          "HR008",
+          "HR002",
+          "HR010",
           "HR009"
         ],
         "hitAtK": 1,
@@ -610,10 +610,10 @@
         ],
         "retrievedDocIds": [
           "HR014",
-          "FI013",
           "HR011",
-          "IT010",
-          "HR017"
+          "OP014",
+          "HR002",
+          "HR013"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -627,16 +627,16 @@
           "HR013"
         ],
         "retrievedDocIds": [
-          "SE002",
-          "SE010",
-          "EN012",
+          "HR013",
+          "HR011",
+          "HR013",
           "HR008",
-          "HR010"
+          "SE002"
         ],
-        "hitAtK": 0,
-        "precisionAtK": 0,
-        "recallAtK": 0,
-        "reciprocalRank": 0
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "reciprocalRank": 1
       },
       {
         "question": "What should an employee do when they are sick, and when is medical proof needed?",
@@ -644,11 +644,11 @@
           "HR003"
         ],
         "retrievedDocIds": [
-          "SE001",
           "HR001",
           "EN008",
-          "EN004",
-          "SE011"
+          "HR012",
+          "HR012",
+          "HR014"
         ],
         "hitAtK": 0,
         "precisionAtK": 0,
@@ -663,16 +663,16 @@
           "HR010"
         ],
         "retrievedDocIds": [
+          "HR014",
+          "HR006",
           "HR010",
-          "SE001",
-          "HR009",
           "HR001",
-          "HR002"
+          "HR014"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 0.6666666666666666,
-        "reciprocalRank": 1
+        "precisionAtK": 0.2,
+        "recallAtK": 0.3333333333333333,
+        "reciprocalRank": 0.3333333333333333
       },
       {
         "question": "What are the rules for a code change before it reaches the main branch?",
@@ -683,10 +683,10 @@
         ],
         "retrievedDocIds": [
           "EN001",
-          "EN002",
-          "SE013",
-          "SE014",
-          "EN009"
+          "EN009",
+          "EN006",
+          "EN010",
+          "EN005"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -701,15 +701,15 @@
           "EN010"
         ],
         "retrievedDocIds": [
-          "EN002",
           "EN006",
-          "EN005",
-          "EN007",
-          "EN012"
+          "EN002",
+          "EN010",
+          "EN014",
+          "EN017"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 0.6666666666666666,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
         "reciprocalRank": 1
       },
       {
@@ -720,16 +720,16 @@
           "EN016"
         ],
         "retrievedDocIds": [
-          "EN004",
           "EN006",
-          "EN002",
-          "EN017",
-          "EN008"
+          "SE003",
+          "FI011",
+          "HR006",
+          "SE007"
         ],
-        "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 0.6666666666666666,
-        "reciprocalRank": 1
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "reciprocalRank": 0
       },
       {
         "question": "What information belongs in a service ownership and capacity plan?",
@@ -740,14 +740,14 @@
         ],
         "retrievedDocIds": [
           "EN014",
-          "OP001",
-          "IT013",
+          "EN016",
           "EN012",
-          "OP005"
+          "OP005",
+          "OP011"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 0.6666666666666666,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
         "reciprocalRank": 1
       },
       {
@@ -760,14 +760,14 @@
         ],
         "retrievedDocIds": [
           "FI009",
-          "FI014",
+          "FI006",
           "FI001",
-          "FI004",
-          "FI006"
+          "FI015",
+          "FI012"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.8,
-        "recallAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 0.75,
         "reciprocalRank": 1
       },
       {
@@ -780,8 +780,8 @@
         "retrievedDocIds": [
           "FI010",
           "FI008",
-          "FI016",
-          "FI017",
+          "FI015",
+          "FI009",
           "FI003"
         ],
         "hitAtK": 1,
@@ -798,9 +798,9 @@
         "retrievedDocIds": [
           "FI015",
           "FI004",
-          "FI001",
           "FI009",
-          "FI015"
+          "FI015",
+          "FI009"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.6,
@@ -814,11 +814,11 @@
           "FI013"
         ],
         "retrievedDocIds": [
-          "FI005",
           "FI013",
-          "OP010",
-          "SE013",
-          "SE016"
+          "HR017",
+          "SE006",
+          "FI005",
+          "OP010"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -833,14 +833,14 @@
         ],
         "retrievedDocIds": [
           "FI011",
-          "FI007",
-          "FI013",
-          "FI009",
-          "FI015"
+          "HR001",
+          "SE006",
+          "HR017",
+          "IT016"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 0.5,
         "reciprocalRank": 1
       },
       {
@@ -853,14 +853,14 @@
         ],
         "retrievedDocIds": [
           "IT009",
-          "SE001",
+          "IT016",
           "SE009",
-          "SE006",
-          "IT006"
+          "IT011",
+          "IT008"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.2,
-        "recallAtK": 0.25,
+        "precisionAtK": 0.4,
+        "recallAtK": 0.5,
         "reciprocalRank": 1
       },
       {
@@ -872,10 +872,10 @@
         ],
         "retrievedDocIds": [
           "IT008",
-          "IT016",
-          "IT012",
           "IT003",
-          "IT010"
+          "IT016",
+          "OP005",
+          "IT013"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
@@ -890,16 +890,16 @@
           "IT015"
         ],
         "retrievedDocIds": [
-          "IT006",
-          "IT004",
-          "IT010",
-          "IT003",
-          "IT011"
+          "IT011",
+          "IT012",
+          "IT015",
+          "IT017",
+          "EN012"
         ],
-        "hitAtK": 0,
-        "precisionAtK": 0,
-        "recallAtK": 0,
-        "reciprocalRank": 0
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 0.3333333333333333,
+        "reciprocalRank": 0.3333333333333333
       },
       {
         "question": "What are the backup and disaster recovery testing expectations for important systems?",
@@ -908,16 +908,16 @@
           "IT017"
         ],
         "retrievedDocIds": [
-          "IT017",
-          "IT004",
-          "IT011",
-          "EN008",
-          "EN002"
+          "EN004",
+          "EN005",
+          "EN015",
+          "EN016",
+          "EN010"
         ],
-        "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 1,
-        "reciprocalRank": 1
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "reciprocalRank": 0
       },
       {
         "question": "How is privileged access approved, protected, reviewed, and removed?",
@@ -928,10 +928,10 @@
         ],
         "retrievedDocIds": [
           "IT016",
-          "IT007",
-          "IT010",
           "IT008",
-          "IT002"
+          "IT003",
+          "IT007",
+          "IT010"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.2,
@@ -945,16 +945,16 @@
           "SE004"
         ],
         "retrievedDocIds": [
-          "SE012",
-          "SE015",
+          "SE003",
+          "SE004",
+          "SE005",
           "SE014",
-          "SE002",
-          "SE004"
+          "SE007"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.4,
-        "recallAtK": 1,
-        "reciprocalRank": 0.25
+        "precisionAtK": 0.2,
+        "recallAtK": 0.5,
+        "reciprocalRank": 0.5
       },
       {
         "question": "How is sensitive information labeled, shared, encrypted, and eventually disposed of?",
@@ -965,16 +965,16 @@
           "SE013"
         ],
         "retrievedDocIds": [
-          "HR016",
           "HR012",
-          "HR005",
-          "SE005",
-          "OP010"
+          "SE014",
+          "SE013",
+          "SE009",
+          "HR005"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.2,
-        "recallAtK": 0.25,
-        "reciprocalRank": 0.25
+        "precisionAtK": 0.6,
+        "recallAtK": 0.75,
+        "reciprocalRank": 0.5
       },
       {
         "question": "How are security weaknesses prioritized and tracked until they are fixed?",
@@ -983,16 +983,16 @@
           "SE015"
         ],
         "retrievedDocIds": [
+          "EN004",
           "SE012",
-          "SE010",
           "SE015",
-          "EN012",
-          "EN015"
+          "EN008",
+          "EN007"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
         "recallAtK": 1,
-        "reciprocalRank": 1
+        "reciprocalRank": 0.5
       },
       {
         "question": "What evidence must be preserved during a security investigation, and how long are logs kept?",
@@ -1001,15 +1001,15 @@
           "SE016"
         ],
         "retrievedDocIds": [
+          "SE008",
           "SE016",
-          "SE014",
-          "SE013",
-          "SE004",
-          "SE012"
+          "SE005",
+          "SE011",
+          "SE013"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.2,
-        "recallAtK": 0.5,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
         "reciprocalRank": 1
       },
       {
@@ -1020,16 +1020,16 @@
           "OP008"
         ],
         "retrievedDocIds": [
+          "EN005",
+          "OP001",
+          "OP008",
           "FI004",
-          "EN012",
-          "EN015",
-          "EN010",
-          "EN016"
+          "EN014"
         ],
-        "hitAtK": 0,
-        "precisionAtK": 0,
-        "recallAtK": 0,
-        "reciprocalRank": 0
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 0.6666666666666666,
+        "reciprocalRank": 0.5
       },
       {
         "question": "How are equipment requests, inventory records, and asset disposal connected?",
@@ -1039,16 +1039,16 @@
           "OP010"
         ],
         "retrievedDocIds": [
-          "OP002",
-          "OP005",
-          "OP003",
           "IT010",
-          "OP012"
+          "OP010",
+          "OP005",
+          "HR017",
+          "SE006"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.4,
         "recallAtK": 0.6666666666666666,
-        "reciprocalRank": 1
+        "reciprocalRank": 0.5
       },
       {
         "question": "What happens during an emergency handover, and where are current emergency contacts maintained?",
@@ -1060,9 +1060,9 @@
         "retrievedDocIds": [
           "OP009",
           "OP006",
-          "OP007",
-          "OP004",
-          "OP011"
+          "OP013",
+          "OP006",
+          "OP015"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.6,
@@ -1077,26 +1077,26 @@
           "OP015"
         ],
         "retrievedDocIds": [
-          "SE006",
-          "SE003",
-          "SE009",
           "OP007",
-          "SE017"
+          "OP013",
+          "SE005",
+          "SE017",
+          "SE014"
         ],
         "hitAtK": 1,
-        "precisionAtK": 0.2,
-        "recallAtK": 0.3333333333333333,
-        "reciprocalRank": 0.25
+        "precisionAtK": 0.4,
+        "recallAtK": 0.6666666666666666,
+        "reciprocalRank": 1
       },
       {
         "question": "What is the policy for employee stock options and equity grants?",
         "relevantDocIds": [],
         "retrievedDocIds": [
-          "HR002",
           "FI009",
           "IT008",
           "IT009",
-          "IT002"
+          "IT002",
+          "IT011"
         ],
         "hitAtK": 0,
         "precisionAtK": 0,
@@ -1113,8 +1113,8 @@
           "HR002",
           "HR001",
           "HR002",
-          "HR007",
-          "HR016"
+          "EN003",
+          "IT007"
         ],
         "hitAtK": 1,
         "precisionAtK": 0.6,
@@ -1123,10 +1123,10 @@
       }
     ],
     "aggregate": {
-      "Hit@5": 0.8333333333333334,
-      "Precision@5": 0.33999999999999997,
-      "Recall@5": 0.7333333333333333,
-      "MRR": 0.7583333333333333
+      "Hit@5": 0.8666666666666667,
+      "Precision@5": 0.36666666666666675,
+      "Recall@5": 0.7666666666666668,
+      "MRR": 0.7388888888888888
     }
   }
 }

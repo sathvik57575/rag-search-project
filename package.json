@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
-    "seed": "node scripts/seed.js",
+    "seed": "node scripts/seed.js data.json",
     "eval": "node eval/evaluate.js",
     "sample": "node eval/sample.js",
     "db:init": "node db/init.js"
