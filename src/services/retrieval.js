@@ -22,27 +22,44 @@ function buildFilterClause(department, verified, startParamIndex) {
   };
 }
 
-async function retrieveChunks({ query, k = 5, department, verified }) {
+function buildPermissionClause(user, startParamIndex) {
+  return {
+    sql: `(
+      (d.organization_id = $${startParamIndex} AND d.access_type = 'organization')
+      OR (d.organization_id = $${startParamIndex} AND d.access_type = 'project' AND d.project_id = ANY($${startParamIndex + 2}::text[]))
+      OR (d.organization_id = $${startParamIndex} AND d.access_type = 'private' AND d.owner_id = $${startParamIndex + 1})
+      OR (d.organization_id = $${startParamIndex} AND d.access_type = 'restricted' AND $${startParamIndex + 1} = ANY(d.allowed_user_ids))
+    )`,
+    params: [user.organizationId, user.userId, user.projectIds],
+  };
+}
+
+async function retrieveChunks({ query, k = 5, department, verified, user }) {
+  if (!user) throw new Error('Authenticated user is required for retrieval');
+
   const queryVector = await embedOne(query); 
   //gives a vector representation of the search query, eg: "tell me about leaves" gets converted into queryVector = [0.10, 0.50, -0.20]
 
   const baseParams = [JSON.stringify(queryVector), k];
   //baseParams = ["[0.10,0.50,-0.20]", 3], assuming k = 3
 
-  const filter = buildFilterClause(department, verified, baseParams.length + 1);
+  const permission = buildPermissionClause(user, baseParams.length + 1);
+  const filter = buildFilterClause(department, verified, baseParams.length + 1 + permission.params.length);
 //buildFilterClause(department, verified, 3), since baseParams array has 2 elements, so baseParams.length + 1 = 3
 
   const sql = `
-    SELECT id, source_doc_id, title, department, doc_date, verified, content,
+        SELECT c.id, c.source_doc_id, c.title, c.department, c.doc_date, c.verified, c.content,
            embedding <=> $1 AS distance
-    FROM chunks
-    ${filter.sql}
+        FROM chunks c
+        JOIN documents d ON d.id = c.source_doc_id
+        WHERE ${permission.sql}
+        ${filter.sql ? `AND ${filter.sql.slice(7)}` : ''}
     ORDER BY distance ASC LIMIT $2
   `;
 
   //limit $2 means we cap how many results come back, here it is = k
 
-  const { rows } = await pool.query(sql, [...baseParams, ...filter.params]);
+  const { rows } = await pool.query(sql, [...baseParams, ...permission.params, ...filter.params]);
   return rows;
 }
 

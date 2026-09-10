@@ -1,32 +1,8 @@
 const express = require('express');
-const pool = require('../config/db');
-const { embedOne } = require('../services/embeddings');
 const { rerank } = require('../services/reranker');
 const { retrieveChunks } = require('../services/retrieval');
 
 const router = express.Router();
-
-// Builds "WHERE dept = $n AND verified = $m" style clauses dynamically,
-// starting param numbering after the vector + limit params already used.
-function buildFilterClause(department, verified, startParamIndex) {
-  const clauses = [];
-  const params = [];
-  let idx = startParamIndex;
-
-  if (department !== undefined) {
-    clauses.push(`department = $${idx++}`);
-    params.push(department);
-  }
-  if (verified !== undefined) {
-    clauses.push(`verified = $${idx++}`);
-    params.push(verified);
-  }
-
-  return {
-    sql: clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '',
-    params,
-  };
-}
 
 // POST /search  {query, k, department?, verified?}
 // Basic vector search: cosine distance via pgvector's <=> operator,
@@ -36,7 +12,7 @@ router.post('/', async (req, res) => {
   if (!query) return res.status(400).json({ error: 'query is required' });
 
   try {
-    const results = await retrieveChunks({ query, k, department, verified });
+    const results = await retrieveChunks({ query, k, department, verified, user: req.user });
     res.json({ results });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -50,19 +26,13 @@ router.post('/rerank', async (req, res) => {
   if (!query) return res.status(400).json({ error: 'query is required' });
 
   try {
-    const queryVector = await embedOne(query);
-    const baseParams = [JSON.stringify(queryVector), candidatePoolSize];
-    const filter = buildFilterClause(department, verified, baseParams.length + 1);
-
-    const sql = `
-      SELECT id, source_doc_id, title, department, doc_date, verified, content,
-             embedding <=> $1 AS distance
-      FROM chunks
-      ${filter.sql}
-      ORDER BY distance ASC LIMIT $2
-    `;
-
-    const { rows: candidates } = await pool.query(sql, [...baseParams, ...filter.params]);
+    const candidates = await retrieveChunks({
+      query,
+      k: candidatePoolSize,
+      department,
+      verified,
+      user: req.user,
+    });
     const rerankedAll = await rerank(query, candidates);
     res.json({ results: rerankedAll.slice(0, k) });
   } catch (err) {

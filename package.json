@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node src/app.js",
     "seed": "node scripts/seed.js data.json",
+    "seed:permissions": "node scripts/seed-permissions.js",
+    "test:permissions": "node scripts/test-permissions.js",
     "eval": "node eval/evaluate.js",
     "sample": "node eval/sample.js",
     "db:init": "node db/init.js"

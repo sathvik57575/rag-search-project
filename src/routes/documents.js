@@ -8,7 +8,17 @@ const router = express.Router();
 // Deletes existing chunks for a doc and also re-chunks and re-embeds and inserts fresh rows.
 // This is used by both POST(new doc) and PUT(update existing doc) methods
 async function upsertDocument(id, meta, text) {
-  const { title = null, department = null, date = null, verified = false } = meta;
+  const {
+    title = null,
+    department = null,
+    date = null,
+    verified = false,
+    organizationId = 'ORG_DEFAULT',
+    accessType = 'organization',
+    projectId = null,
+    ownerId = null,
+    allowedUserIds = [],
+  } = meta;
   const chunks = chunkText(text);
   if (chunks.length === 0) throw new Error('Document produced no chunks(this isempty content)');
 
@@ -17,6 +27,14 @@ async function upsertDocument(id, meta, text) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    await client.query(
+      `INSERT INTO documents (id, title, organization_id, access_type, project_id, owner_id, allowed_user_ids)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (id) DO UPDATE SET
+         title = EXCLUDED.title,
+         updated_at = now()`,
+      [id, title, organizationId, accessType, projectId, ownerId, allowedUserIds]
+    );
     await client.query('DELETE FROM chunks WHERE source_doc_id = $1', [id]);
 
     for (let i = 0; i < chunks.length; i++) {
@@ -42,26 +60,26 @@ async function upsertDocument(id, meta, text) {
   return { id, chunkCount: chunks.length };
 }
 
-// POST /documents { id, title,text,department,date,verified}
+// POST /documents { id, title, text, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds }
 router.post('/', async (req, res) => {
-  const { id, title, text, department, date, verified } = req.body;
+  const { id, title, text, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds } = req.body;
   if (!id || !text) {
     return res.status(400).json({ error: 'id and text are required' });
   }
   try {
-    const result = await upsertDocument(id, { title, department, date, verified }, text);
+    const result = await upsertDocument(id, { title, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds }, text);
     res.status(201).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PUT method /documents/:id  {title,text, department, date,verified }
+// PUT method /documents/:id { title, text, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds }
 router.put('/:id', async (req, res) => {
-  const { title, text, department, date, verified } = req.body;
+  const { title, text, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds } = req.body;
   if (!text) return res.status(400).json({ error: 'text is required' });
   try {
-    const result = await upsertDocument(req.params.id, { title, department, date, verified }, text);
+    const result = await upsertDocument(req.params.id, { title, department, date, verified, organizationId, accessType, projectId, ownerId, allowedUserIds }, text);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

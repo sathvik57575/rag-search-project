@@ -19,6 +19,7 @@ router.post('/', async (req, res) => {
       k: limit,
       department,
       verified,
+      user: req.user,
     });
     const generated = await generateGroundedAnswer(question, chunks);
 
