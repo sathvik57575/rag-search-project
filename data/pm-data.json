@@ -1,0 +1,103 @@
+{
+    "employees": [
+        {
+            "id": "EMP1",
+            "name": "John Smith",
+            "role": "Engineer"
+        },
+        {
+            "id": "EMP2",
+            "name": "John Doe",
+            "role": "Designer"
+        },
+        {
+            "id": "EMP3",
+            "name": "Priya Shah",
+            "role": "Product Manager"
+        },
+        {
+            "id": "EMP4",
+            "name": "Marcus Lee",
+            "role": "QA Engineer"
+        }
+    ],
+    "projects": [
+        {
+            "id": "PROJ_ALPHA",
+            "name": "Project Alpha",
+            "status": "active",
+            "ownerId": "EMP3"
+        },
+        {
+            "id": "PROJ_BETA",
+            "name": "Project Beta",
+            "status": "active",
+            "ownerId": "EMP1"
+        },
+        {
+            "id": "PROJ_GAMMA",
+            "name": "Project Gamma",
+            "status": "completed",
+            "ownerId": "EMP2"
+        }
+    ],
+    "tasks": [
+        {
+            "id": "TASK1",
+            "projectId": "PROJ_ALPHA",
+            "title": "Fix login bug",
+            "assigneeId": "EMP1",
+            "dueDate": "2026-08-01",
+            "status": "in_progress"
+        },
+        {
+            "id": "TASK2",
+            "projectId": "PROJ_ALPHA",
+            "title": "Update onboarding copy",
+            "assigneeId": "EMP2",
+            "dueDate": "2026-08-15",
+            "status": "todo"
+        },
+        {
+            "id": "TASK3",
+            "projectId": "PROJ_ALPHA",
+            "title": "Run regression tests",
+            "assigneeId": "EMP4",
+            "dueDate": "2026-09-20",
+            "status": "todo"
+        },
+        {
+            "id": "TASK4",
+            "projectId": "PROJ_BETA",
+            "title": "Design dashboard",
+            "assigneeId": "EMP2",
+            "dueDate": "2026-09-05",
+            "status": "done"
+        },
+        {
+            "id": "TASK5",
+            "projectId": "PROJ_BETA",
+            "title": "Write API contract",
+            "assigneeId": "EMP1",
+            "dueDate": "2026-08-25",
+            "status": "in_progress"
+        },
+        {
+            "id": "TASK6",
+            "projectId": "PROJ_GAMMA",
+            "title": "Archive release notes",
+            "assigneeId": "EMP3",
+            "dueDate": "2026-07-01",
+            "status": "done"
+        },
+
+        {
+            "id": "TASK44",
+            "projectId": "PROJ_ALPHA",
+            "title": "Run ABC",
+            "assigneeId": "EMP4",
+            "dueDate": "2027-09-20",
+            "status": "todo"
+        }
+    ]
+}

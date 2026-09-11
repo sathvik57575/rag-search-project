@@ -1,24 +1,18 @@
 const express = require('express');
 require('dotenv').config();
 
-const documentsRouter = require('./routes/documents');
-const searchRouter = require('./routes/search');
-const askRouter = require('./routes/ask');
-const fakeAuth = require('./middleware/fakeAuth');
+const agentRouter = require('./routes/agent');
 
 const app = express();
 app.use(express.json())
 const PORT = process.env.PORT || 3000;
 
-app.use('/documents', documentsRouter); 
-app.use('/search', fakeAuth, searchRouter);
-
-app.use('/ask', fakeAuth, askRouter); //for llm
+app.use('/agent', agentRouter);
 
 app.get('/', (req,res)=>{
-  res.send("hi, I'm sathvik, server started")
+  res.json({ name: 'Project Management Agent', status: 'ok' });
 })
 app.listen(PORT, () => {
-  console.log(`RAG search API listening on port ${PORT}`);
+  console.log(`Project management agent listening on port ${PORT}`);
 });
 

@@ -1,3 +1,0 @@
-Search authorization is enforced in SQL inside `retrieveChunks`. The query joins each chunk to its document and applies the authenticated user's organization, project memberships, ownership, and restricted allow-list before ordering or applying `LIMIT`.
-
-This ordering is intentional: unauthorized chunks are never returned from retrieval, never sent to the reranker, and never included in the context passed to the LLM. The `x-user-id` header is only a development auth stub; production authentication must establish the same `req.user` fields from a trusted identity provider.

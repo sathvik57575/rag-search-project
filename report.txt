@@ -1,143 +1,1621 @@
-RAG Search Project Report
+PROJECT MANAGEMENT AI AGENT
+DETAILED BEGINNER REPORT
+========================================
+
+1. WHAT THIS APPLICATION IS
+----------------------------
+
+This application is a small AI project-management agent. It is not a RAG application anymore.
+
+RAG usually means:
+
+    question -> embeddings -> vector search -> retrieved text -> LLM answer
+
+This application uses tool calling instead:
+
+    question -> LLM chooses a tool -> JavaScript runs the tool
+              -> tool result goes back to the LLM -> final answer
+
+The important difference is that the LLM does not receive the entire project database as a prompt. It receives descriptions of available tools. It decides what information it needs, chooses a tool, creates the arguments, and waits for the application to execute that tool.
+
+The application data is stored in:
+
+    data/pm-data.json
+
+There is no PostgreSQL database, no embeddings, no vector database, no chunking, and no reranking in this version.
+
+The main files are:
+
+    src/app.js          Starts Express and mounts the API route.
+    src/routes/agent.js Validates the HTTP request and calls the agent.
+    src/agent.js        Runs the LLM/tool-calling loop.
+    src/tools.js        Describes tools using Ollama's tool schema format.
+    src/toolImpl.js     Contains the real JavaScript functions behind the tools.
+    data/pm-data.json   Contains employees, projects, and tasks.
 
 
-I built a semantic search API for a small collection of documents. The project uses embeddings to search by meaning instead of only matching the exact words in the question. I also added metadata filters and a re-ranking option.
+2. THE FULL POSTMAN FLOW
+------------------------
 
-The project is made with Node.js and Express. The database is PostgreSQL on Neon. I used the pgvector extension in PostgreSQL so that the document embeddings can be stored and searched in the database.
+Suppose Postman sends this request:
 
-Data
+    POST http://localhost:3000/agent
 
-The starting data is in data.json. It contains 100 documents. Each document has an id, title, department, text, date, and verified value. The departments include HR and Engineering and finance and operations etc.
+Headers:
 
-I used the document id as the main id for each original document. In the database, the content is stored as chunks. Every chunk keeps the original document id in source_doc_id column. This was useful because search happens on chunks, but updating and deleting needs to happen for the whole original document.
+    Content-Type: application/json
 
-Chunking
+Body:
 
-Before making embeddings, I split each document into smaller chunks. I used a 20 percent overlap. The overlap means that some words from one chunk are repeated in the next chunk, so the meaning is not cut off too suddenly and context is preserved .
+    {
+      "message": "How many projects does Priya own?"
+    }
 
-I adjusted the chunk size and overlap ratio a few times while working on the project. I tried this because chunk size can change the search results. If chunks are too small, they may lose context. If they are too big, the result may contain extra information and be less focused.
+The complete flow is:
 
-Embeddings
+STEP 1 - Postman sends an HTTP request
 
-I used the Hugging Face Inference API to create embeddings. The API token and model name are kept in environment variables. The embedding code sends texts in batches instead of sending every text as a separate request. It also retries when Hugging Face returns a temporary 503 or 429 error.
+Postman sends JSON to the Express server. The JSON body has one required property:
 
-The vectors are stored in a VECTOR(384) column. The query is also converted into an embedding before searching. PostgreSQL then compares the query vector with the stored vectors using cosine distance.
+    message
 
-Database
+The message is the natural-language question from the user.
 
-I created a chunks table instead of a separate row for only the full document. The table stores the parent document id, metadata, chunk position, text, embedding, and timestamps.
+STEP 2 - Express parses the JSON
 
-I enabled the pgvector extension and added an HNSW index for cosine similarity search. I also added indexes for source_doc_id, department, verified, and date. The HNSW index supports adding new rows without rebuilding the complete database.
+In src/app.js, this line is important:
 
-Search
+    app.use(express.json())
 
-The normal search endpoint is:
+It tells Express to read a JSON request body and make it available as req.body.
 
-POST /search
+Without this middleware, req.body would not contain the parsed JSON object.
 
-It receives a query and an optional k value. It embeds the query and returns the top k closest chunks. It can also filter results by department and verified status. For example, I can search only HR documents or only verified documents.
+STEP 3 - Express finds the route
 
-The vector search uses the pgvector cosine distance operator. The results are sorted by the smallest distance first.
+The application mounts the agent router with:
+
+    app.use('/agent', agentRouter)
+
+The router itself defines POST '/'. Because it is mounted at '/agent', the final URL becomes:
+
+    POST /agent
+
+STEP 4 - The route validates the input
+
+src/routes/agent.js reads:
+
+    const { message, model } = req.body;
+
+It extracts the user's message. It also allows an optional model override.
+
+If message is missing or is not a string, the route returns HTTP 400:
+
+    {
+      "error": "message is required"
+    }
+
+This validation happens before Ollama is contacted.
+
+STEP 5 - The route calls runAgent
+
+The route calls:
+
+    runAgent(message, { model })
+
+This transfers control to src/agent.js. The route does not decide which tool should run. The agent loop and the LLM decide that.
+
+STEP 6 - agent.js creates the conversation
+
+The agent creates a messages array containing:
+
+    1. A system message containing the agent's rules.
+    2. A user message containing the Postman question.
+
+For the Priya question, the beginning of the conversation looks conceptually like:
+
+    [
+      {
+        role: "system",
+        content: "You are a project management agent..."
+      },
+      {
+        role: "user",
+        content: "How many projects does Priya own?"
+      }
+    ]
+
+STEP 7 - agent.js sends tools to Ollama
+
+The application sends Ollama:
+
+    {
+      model: "llama3.2",
+      messages: [...conversation...],
+      tools: [...toolDefinitions...],
+      stream: false
+    }
+
+The tools array comes from src/tools.js. The model receives tool names, descriptions, and parameter schemas. It does not receive JavaScript function bodies.
+
+STEP 8 - Ollama chooses a tool
+
+For the question about Priya's ownership, the model should choose get_projects.
+
+A good tool call could look like:
+
+    {
+      "name": "get_projects",
+      "arguments": {
+        "ownerName": "Priya"
+      }
+    }
+
+The model may instead first call get_employee:
+
+    {
+      "name": "get_employee",
+      "arguments": {
+        "name": "Priya"
+      }
+    }
+
+Then, after receiving EMP3, it may call:
+
+    {
+      "name": "get_projects",
+      "arguments": {
+        "ownerId": "EMP3"
+      }
+    }
+
+Both approaches are supported. The system prompt prefers resolving the employee first, and the implementation also supports ownerName as a safe fallback.
+
+STEP 9 - JavaScript executes the selected function
+
+The LLM does not execute JavaScript itself. It only returns a tool name and arguments.
+
+agent.js looks up the name in toolImpl:
+
+    toolImpl[toolName](argumentsObject)
+
+For get_projects, this invokes the real get_projects function in src/toolImpl.js.
+
+STEP 10 - The tool reads the JSON data
+
+get_projects filters the projects in data/pm-data.json. For ownerName Priya, it finds Priya Shah with ID EMP3. It then finds projects whose ownerId is EMP3.
+
+The result is:
+
+    {
+      "count": 1,
+      "projects": [
+        {
+          "id": "PROJ_ALPHA",
+          "name": "Project Alpha",
+          "status": "active",
+          "ownerId": "EMP3"
+        }
+      ]
+    }
+
+STEP 11 - The application logs the call
+
+The agent records:
+
+    {
+      "iteration": 1,
+      "tool": "get_projects",
+      "arguments": {
+        "ownerName": "Priya"
+      },
+      "result": {
+        "count": 1,
+        "projects": [ ... ]
+      }
+    }
+
+This is why the API response contains a log. The log is evidence of what the agent did.
+
+STEP 12 - The tool result goes back to Ollama
+
+agent.js adds a message with role tool:
+
+    {
+      role: "tool",
+      tool_name: "get_projects",
+      content: "{...JSON result...}"
+    }
+
+The model now sees the original question, its previous tool call, and the tool result.
+
+STEP 13 - Ollama decides whether it needs another tool
+
+If more information is needed, Ollama returns another tool call. The loop repeats.
+
+If enough information is available, Ollama returns a normal assistant message such as:
+
+    "Priya owns 1 project: Project Alpha."
+
+STEP 14 - The agent returns the final result
+
+When the assistant message has no tool_calls, runAgent returns:
+
+    {
+      finalAnswer: "...",
+      model: "llama3.2",
+      iterations: 2,
+      log: [...]
+    }
+
+STEP 15 - The route sends JSON to Postman
+
+The route adds the original message and sends the result as the HTTP response.
+
+Typical response:
+
+    {
+      "message": "How many projects does Priya own?",
+      "finalAnswer": "Priya owns 1 project: Project Alpha.",
+      "model": "llama3.2",
+      "iterations": 2,
+      "log": [
+        {
+          "iteration": 1,
+          "tool": "get_projects",
+          "arguments": { "ownerName": "Priya" },
+          "result": {
+            "count": 1,
+            "projects": [ ... ]
+          }
+        }
+      ]
+    }
 
 
-Re-ranking
+3. src/agent.js - LINE-BY-LINE EXPLANATION
+-------------------------------------------
 
-I also added this endpoint:
+Line:
 
-POST /search/rerank
+    const axios = require('axios');
 
-This first does normal vector search, but it gets a bigger candidate pool. After that, it sends the query and the candidate chunk text to a cross-encoder through Hugging Face. The cross-encoder reads the query and document together and gives a relevance score for each pair. The candidates are sorted by this score and only the requested top k results are returned.
+This imports Axios. Axios is an HTTP client library. The agent uses it to send POST requests to the local Ollama HTTP API.
 
-If the re-ranking model request returns a 400 or 404, the code uses a simple word matching score as a fallback. This means the endpoint can still return a result in that case.
+Line:
 
-Evaluation
+    const { toolDefinitions } = require('./tools');
 
-I made 30 test questions. The questions were generated with gPT and each question has one or more correct document ids. The evaluation script runs both normal vector search and re-ranked search for every question.
+This imports the array of tool schemas from tools.js. These schemas tell Ollama what tools exist and what arguments each tool accepts.
 
-I used these metrics:
+Line:
 
-Hit@5: whether at least one correct document was in the first five results
-  Precision@5: how many of the first five results were correct
- Recall@5 : how many of the correct documents were found in the first five
- MRR: how high the first correct result appeared in the list
+    const toolImpl = require('./toolImpl');
 
-In one evaluation run, normal vector search gave these results:
+This imports the actual JavaScript functions. The model knows tool names such as get_employee, but the application uses this object to find and execute the matching function.
 
-Basic vector search:
-{
-  'Hit@5': 0.8833333333333333,
-  'Precision@5': 0.33666666666666667,
-  'Recall@5': 0.4944444444444445,
-  'MRR': 0.6588888888888888
-}
+Line:
 
-Reranked search:
-{
-  'Hit@5': 0.9166666666666666,
-  'Precision@5': 0.35333333333333334,
-  'Recall@5': 0.5277777777777778,
-  'MRR': 0.6844444444444444
-}
+    const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
+
+This chooses the model. If the environment variable OLLAMA_MODEL exists, that value is used. Otherwise the default is llama3.2.
+
+For example, this command changes the model for the process:
+
+    $env:OLLAMA_MODEL = 'llama3.2:latest'
+
+The || operator means "use the right-hand value when the left-hand value is missing or empty."
+
+Line:
+
+    const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434/api/chat';
+
+This stores the Ollama chat endpoint. Ollama normally runs locally on port 11434. The /api/chat endpoint supports conversation messages and tools.
+
+The URL can be changed with OLLAMA_URL if Ollama is running somewhere else.
+
+Line:
+
+    const MAX_ITERATIONS = 8;
+
+This is a safety limit. An LLM could theoretically keep requesting tools forever. The loop is allowed to make at most eight model iterations before returning a controlled stopping message.
+
+The limit prevents an infinite loop and protects the server from an accidental runaway request.
+
+The systemMessage object:
+
+    const systemMessage = {
+      role: 'system',
+      content: '...'
+    };
+
+This creates the instruction message sent to the model on every agent run.
+
+role: system tells Ollama that this is a high-priority instruction, not a normal user question.
+
+The content gives the model operating rules. Important rules include:
+
+- Use employee tools for employee questions.
+- Use project tools for project questions.
+- Use task tools for task questions.
+- Resolve a person's name before filtering by an ID when possible.
+- Do not use an empty ownerId or assigneeId.
+- Do not use the text get_employee as if it were an ID.
+- Use pending=true for pending task questions.
+- Ask the user to clarify if a tool reports ambiguity.
+- Never invent project-management records.
+
+This is guidance for the LLM. It is useful, but it is not the only protection. toolImpl.js also validates IDs and filters because model instructions alone are not guaranteed to be followed perfectly.
+
+Function:
+
+    async function askModel(messages, model) {
+
+This declares an asynchronous function. It is asynchronous because it waits for a network response from Ollama.
+
+The messages parameter is the current conversation. The model parameter is the selected Ollama model name.
+
+Inside the function:
+
+    const response = await axios.post(OLLAMA_URL, {
+      model,
+      messages,
+      tools: toolDefinitions,
+      stream: false
+    });
+
+axios.post sends an HTTP POST request.
+
+The first argument is the URL.
+
+The second argument is the JSON request body.
+
+model tells Ollama which model should answer.
+
+messages contains the system message, user question, assistant tool-call messages, and tool results.
+
+tools provides the function schemas from tools.js.
+
+stream: false asks for one complete response instead of receiving a stream of partial tokens.
+
+await pauses this function until Ollama responds. It does not block the entire Node.js process; it pauses this asynchronous function.
+
+Next line:
+
+    const message = response.data && response.data.message;
+
+Ollama's Axios response is inside response.data. The && operation safely reads message only if response.data exists.
+
+The expected Ollama shape is approximately:
+
+    {
+      "message": {
+        "role": "assistant",
+        "content": "...",
+        "tool_calls": [ ... ]
+      }
+    }
+
+Next:
+
+    if (!message) throw new Error('Ollama returned no message');
+
+If Ollama returns an unexpected response with no message, the function throws an error. The route catches this later and returns HTTP 502.
+
+Next:
+
+    return message;
+
+Only the useful assistant message is returned to the agent loop.
+
+Function:
+
+    function parseArguments(rawArguments) {
+
+This converts tool arguments into a JavaScript object.
+
+Ollama may return arguments as an object:
+
+    { name: 'Priya' }
+
+or as a JSON string:
+
+    '{"name":"Priya"}'
+
+The function supports both formats.
+
+Line:
+
+    if (!rawArguments) return {};
+
+If the model returns no arguments, the function uses an empty object. This is useful for get_employee, because get_employee with no filters means "list all employees."
+
+Line:
+
+    if (typeof rawArguments === 'object') return rawArguments;
+
+If the arguments are already an object, return them unchanged.
+
+Line:
+
+    return JSON.parse(rawArguments);
+
+If the arguments are a string, parse the JSON string. Invalid JSON causes an exception, which is handled by the agent's tool error handling.
+
+Function:
+
+    async function runAgent(userMessage, options = {}) {
+
+This is the main public function. The API route calls it with the user's question.
+
+options defaults to an empty object so the caller does not have to provide options.
+
+Validation:
+
+    if (!userMessage || typeof userMessage !== 'string') {
+      throw new Error('message is required');
+    }
+
+This rejects missing values and non-string values. A number, object, null, or empty string is not accepted as a question.
+
+Model selection:
+
+    const model = options.model || DEFAULT_MODEL;
+
+If the HTTP request supplies a model, it is used. Otherwise the default model is used.
+
+Conversation initialization:
+
+    const messages = [systemMessage, { role: 'user', content: userMessage }];
+
+This creates the initial conversation. The model sees the instructions first and the user question second.
+
+Logging initialization:
+
+    const log = [];
+
+Every executed tool call is added to this array. This makes the agent observable instead of hiding its work.
+
+The loop:
+
+    for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration += 1) {
+
+This is the core agent loop. It starts at iteration 1, continues through iteration 8 at most, and increases iteration by one after each model response.
+
+The application does not hard-code a fixed workflow such as "always call employee, then task." The model chooses the next tool based on the current conversation and tool results.
+
+Calling the model:
+
+    const assistantMessage = await askModel(messages, model);
+
+The current conversation is sent to Ollama. The model may answer directly or request one or more tools.
+
+Saving the assistant message:
+
+    messages.push(assistantMessage);
+
+The assistant's response is saved so that it becomes part of the conversation sent on the next iteration.
+
+Reading tool calls:
+
+    const calls = assistantMessage.tool_calls || [];
+
+If Ollama returned tool_calls, calls contains them. If it returned no tool_calls, the fallback [] is used.
+
+This is the important decision point: tool_calls means the model wants the application to execute functions; no tool_calls means the model has produced its final text answer.
+
+Final-answer branch:
+
+    if (calls.length === 0) {
+      return {
+        finalAnswer: assistantMessage.content || '',
+        model,
+        iterations: iteration,
+        log
+      };
+    }
+
+If there are no calls, the agent stops. It returns the model's text, selected model, number of iterations, and tool history.
+
+Multiple calls:
+
+    for (const call of calls) {
+
+The model can request more than one tool in the same response. This loop processes every requested call.
+
+Reading the tool name:
+
+    const toolName = call.function && call.function.name;
+
+Ollama puts the requested function name inside call.function.name. The && protects against a malformed call without function data.
+
+Reading arguments:
+
+    const argumentsValue = call.function && call.function.arguments;
+
+This extracts the raw tool arguments.
+
+Parsing arguments:
+
+    const argumentsObject = parseArguments(argumentsValue);
+
+This ensures the implementation receives a JavaScript object rather than a JSON string.
+
+Declaring result:
+
+    let result;
+
+The result variable will contain either the normal tool result or an error object.
+
+Tool execution try block:
+
+    try {
+      if (!toolImpl[toolName]) throw new Error(`Unknown tool '${toolName}'`);
+      result = toolImpl[toolName](argumentsObject);
+    }
+
+First, the code checks that the requested tool actually exists. Then it dynamically calls the matching function.
+
+For example, if toolName is get_employee, this is equivalent to:
+
+    toolImpl.get_employee(argumentsObject)
+
+This dynamic lookup is what allows the model to choose tools without the application containing an if statement for every possible user question.
+
+Error handling:
+
+    catch (error) {
+      result = { error: error.message };
+    }
+
+A tool failure does not crash the entire agent loop. The error is converted into normal JSON and sent to the model. The model can then explain the failure or try another tool.
+
+Logging:
+
+    log.push({ iteration, tool: toolName, arguments: argumentsObject, result });
+
+This records exactly what happened: when it happened, which tool ran, which arguments were passed, and what came back.
+
+Sending the result to the model:
+
+    messages.push({
+      role: 'tool',
+      tool_name: toolName,
+      content: JSON.stringify(result)
+    });
+
+This is the key tool-calling handshake. The application sends the function result back into the conversation with role tool.
+
+The model can now read the result and decide whether it has enough information or needs another tool.
+
+After the for loop ends, the outer for loop starts the next iteration and asks Ollama again.
+
+Maximum-iteration result:
+
+    return {
+      finalAnswer: 'I could not complete the request within the tool-call limit.',
+      model,
+      iterations: MAX_ITERATIONS,
+      stopped: 'max_iterations',
+      log
+    };
+
+If the model keeps requesting tools for eight iterations, the agent stops safely and returns this controlled response.
+
+Export:
+
+    module.exports = { runAgent, MAX_ITERATIONS };
+
+This makes runAgent available to routes/agent.js. MAX_ITERATIONS is also exported for tests or other code.
 
 
-In another one it gave 
+4. src/tools.js - LINE-BY-LINE EXPLANATION
+-------------------------------------------
 
-Basic vector search: {
-  'Hit@5': 0.9333333333333333,
-  'Precision@5': 0.36666666666666664,
-  'Recall@5': 0.5472222222222222,
-  MRR: 0.6955555555555556
-}
-Reranked search:     {
-  'Hit@5': 0.8666666666666667,
-  'Precision@5': 0.3466666666666667,
-  'Recall@5': 0.5111111111111112,
-  MRR: 0.6733333333333332
-}
+This file does not execute any data lookup. It defines descriptions of functions for Ollama.
 
-In that set, normal search had Hit@5 of 0.8833 and re-ranked search had Hit@5 of 0.9167. This shows that the re-ranker did not always behave the same way on every question set.
+The model sees these definitions and uses them to decide which function to call.
 
-So re-ranker only gave a small improvement sometimes, and sometimes it made the result worse. There are only 100 documents and most document texts are short, around 30 to 40 words. Also, I was sending a  large candidate pool to the re-ranker. Because of this, the re-ranker could move a wrong chunk above a good vector result. For this dataset, basic vector search was already working well, so the extra re-ranking step was not always useful.
+Top-level declaration:
 
-Adding, updating, and deleting documents
+    const toolDefinitions = [
 
-I added API endpoints for changing the data without loading the complete dataset again.
+This begins an array. Each array element describes one callable tool.
 
-POST /documents
+Every tool has this general shape:
 
-This adds a new document. The text is chunked, embedded, and inserted into the database.
+    {
+      type: 'function',
+      function: {
+        name: 'tool_name',
+        description: 'When to use it',
+        parameters: {
+          type: 'object',
+          properties: { ... }
+        }
+      }
+    }
 
-PUT /documents/:id
+The type tells Ollama this is a function tool.
 
-This updates an existing document. The code deletes the old chunks with that document id, creates new chunks, creates new embeddings, and inserts the new rows. The database operations are inside a transaction, so it rolls back if something fails.
+The function.name is the exact name returned by the model. It must match a function exported by toolImpl.js.
 
-DELETE /documents/:id
+The description is extremely important. It is part of the model's decision-making context. A vague description can cause incorrect tool selection or incorrect arguments.
 
-This deletes every chunk that has the given source document id.
+The parameters object is a JSON Schema-like description of accepted arguments.
 
-Using the parent document id for these operations means I do not need to manually find and change every individual chunk. New documents and updates also do not require embedding all 100 documents again.
+Tool 1: get_employee
 
-Testing
+    name: 'get_employee'
 
-I tested the API endpoints in Postman. I tested normal search, search with department and verified filters, re-ranked search, adding documents, updating documents, and deleting documents. I also ran the evaluation script against the 30 questions and saved the detailed results in eval/results.json.
+This tells the model that the function is called get_employee.
+
+Its description says that it can:
+
+- Find an employee by ID.
+- Find an employee by a partial name.
+- List all employees when no filter is given.
+- Return ambiguity rather than guessing when multiple employees match.
+
+Its properties are:
+
+    id: string
+
+This is an employee ID, such as EMP1.
+
+    name: string
+
+This is an employee name or partial name, such as Priya or John Smith.
+
+    additionalProperties: false
+
+This tells the model not to invent unrelated parameters.
+
+Tool 2: get_project
+
+This tool finds one project by project ID or exact project name.
+
+Examples:
+
+    { "id": "PROJ_ALPHA" }
+
+or:
+
+    { "name": "Project Alpha" }
+
+The description tells the model to use this before project-specific task queries when it needs to convert a human project name into a project ID.
+
+Tool 3: get_projects
+
+This tool lists multiple projects.
+
+It supports:
+
+    ownerId
+
+An employee ID such as EMP3.
+
+    ownerName
+
+A human name such as Priya. This is a safe fallback. The implementation resolves it to exactly one employee and rejects ambiguous names.
+
+    status
+
+A project status such as active or completed.
+
+    name
+
+A project-name search value.
+
+For "How many projects does Priya own?", the model should use ownerName Priya or first call get_employee and then use ownerId EMP3.
+
+Tool 4: get_tasks
+
+This tool lists tasks.
+
+It supports:
+
+    projectId
+
+A project ID such as PROJ_ALPHA.
+
+    assigneeId
+
+An employee ID such as EMP1. It must not be a human name.
+
+    assigneeName
+
+A safe fallback for a human name. The implementation resolves the name and checks for ambiguity.
+
+    status
+
+A task status such as todo, in_progress, or done.
+
+    pending
+
+A boolean-like filter. Pending means todo or in_progress.
+
+    overdue
+
+A boolean-like filter. Overdue means the due date is before today's date and the task is not done.
+
+The description explicitly warns the model about IDs and says not to return every task for a person-specific question.
+
+Tool 5: get_task
+
+This tool retrieves one exact task by ID.
+
+The id property is required. This means the model should not call get_task without an id.
+
+Example:
+
+    { "id": "TASK1" }
+
+Tool 6: calculate_project_metrics
+
+This tool calculates project-level statistics.
+
+It requires projectId and returns counts such as:
+
+- totalTasks
+- doneTasks
+- inProgressTasks
+- todoTasks
+- overdueTasks
+- completionRate
+
+The model should use this for a summary instead of unnecessarily fetching every task.
+
+Export:
+
+    module.exports = { toolDefinitions };
+
+This exports the array so agent.js can send it to Ollama.
+
+Important distinction:
+
+The definitions in tools.js are only instructions and schemas. They do not contain the database lookup logic. The actual behavior is in toolImpl.js.
 
 
-How to run it
+5. src/toolImpl.js - LINE-BY-LINE EXPLANATION
+----------------------------------------------
 
-The database schema can be created with:
-node db/init.js
+Imports:
 
-The original data can be loaded through the seed script while the server is running:
-node scripts/seed.js data.json
+    const fs = require('fs');
 
-The evaluation can be run with:
-npm run eval
+This imports Node's filesystem module. It is used to read the JSON data file.
+
+    const path = require('path');
+
+This imports Node's path utility. It builds a file path that works reliably on Windows and other operating systems.
+
+Data path:
+
+    const dataPath = path.join(__dirname, '..', 'data', 'pm-data.json');
+
+__dirname is the directory containing toolImpl.js, which is src.
+
+'..' moves from src to the project root.
+
+'data' enters the data folder.
+
+'pm-data.json' is the data file.
+
+The resulting path points to data/pm-data.json.
+
+Loading data:
+
+    const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+
+fs.readFileSync reads the entire file as UTF-8 text.
+
+JSON.parse converts that text into a JavaScript object.
+
+The object has employees, projects, and tasks arrays.
+
+This happens once when the module is loaded. Each tool then reads the in-memory data object.
+
+Helper: isTrue
+
+    function isTrue(value) {
+      return value === true || value === 'true';
+    }
+
+LLMs sometimes send a real JSON boolean true and sometimes incorrectly send the string "true". This helper treats both as true.
+
+This protects filters such as pending and overdue from silently failing because of a type mismatch.
+
+Helper: findById
+
+    function findById(items, id) {
+      return items.find((item) => item.id.toLowerCase() === String(id).toLowerCase());
+    }
+
+This searches an array for an ID case-insensitively.
+
+For example, EMP1 and emp1 match.
+
+String(id) prevents errors if an unexpected non-string value is passed.
+
+Array.find returns the first matching item or undefined if nothing matches.
+
+Helper: normalizeStatus
+
+    function normalizeStatus(status) {
+      if (!status) return status;
+      const normalized = String(status).toLowerCase().replace(/[- ]/g, '_');
+      return normalized === 'pending' ? undefined : normalized;
+    }
+
+This standardizes status text.
+
+For example:
+
+    "In Progress" -> "in_progress"
+    "in-progress" -> "in_progress"
+    "TODO"        -> "todo"
+
+The function returns undefined for pending because pending is not stored as one database status. Pending is a group: todo plus in_progress. get_tasks handles that group separately.
+
+Function: get_employee
+
+    function get_employee({ id, name } = {}) {
+
+This defines the employee tool function. It destructures id and name from the argument object. If no object is provided, it uses an empty object.
+
+First branch:
+
+    if (!id && !name) return {
+      count: data.employees.length,
+      employees: data.employees
+    };
+
+No filters means list all employees. This supports questions such as "What employees do we have?"
+
+Finding matches:
+
+    const matches = data.employees.filter((employee) =>
+      (id && employee.id.toLowerCase() === String(id).toLowerCase()) ||
+      (name && employee.name.toLowerCase().includes(name.toLowerCase()))
+    );
+
+filter checks every employee.
+
+The first condition matches an ID.
+
+The second condition matches a name substring. Searching John can match both John Smith and John Doe.
+
+The || means either condition is enough.
+
+No matches:
+
+    if (matches.length === 0) return {
+      error: 'No employee found',
+      query: { id, name }
+    };
+
+The tool returns a structured error instead of pretending an employee exists.
+
+Ambiguous matches:
+
+    if (matches.length > 1) return {
+      ambiguous: true,
+      message: 'Multiple employees matched; ask the user to clarify.',
+      matches
+    };
+
+This is important. The function does not guess which John the user meant. It returns all matches and tells the model that clarification is needed.
+
+One match:
+
+    return matches[0];
+
+If exactly one employee matches, return that employee object.
+
+Function: get_project
+
+This has the same general structure as get_employee, but searches data.projects.
+
+It matches an ID case-insensitively and a project name exactly after converting both to lowercase.
+
+If no project exists, it returns an error object.
+
+If multiple projects ever match, it returns ambiguous true rather than guessing.
+
+If one project matches, it returns that project.
+
+Function: get_projects
+
+    function get_projects({ ownerId, ownerName, status, name } = {}) {
+
+This lists projects and supports owner filters.
+
+Owner ID validation:
+
+    if (ownerId) {
+      const owner = findById(data.employees, ownerId);
+      if (!owner) {
+        return {
+          error: `Unknown ownerId '${ownerId}'. Resolve the employee name with get_employee and use the returned employee ID.`
+        };
+      }
+      ownerId = owner.id;
+    }
+
+If the model sends ownerId get_employee, that is rejected. It is not silently treated as a valid ID.
+
+If the ID is valid with different capitalization, the canonical stored ID is used.
+
+The purpose is to prevent a false answer such as "Priya owns zero projects" when the actual problem is that the model sent an invalid ID.
+
+The second owner validation check repeats the same protection for the normalized ownerId. It is defensive code.
+
+Owner-name resolution:
+
+    if (ownerName) {
+      const matches = data.employees.filter((employee) =>
+        employee.name.toLowerCase().includes(ownerName.toLowerCase())
+      );
+
+This finds employees whose names contain the requested owner name.
+
+If no employees match, return an error.
+
+If multiple employees match, return ambiguous true and the matches.
+
+If exactly one matches:
+
+    ownerId = matches[0].id;
+
+The human name is converted to a reliable employee ID before filtering projects.
+
+Project filtering:
+
+    const projects = data.projects.filter((project) =>
+      (!ownerId || project.ownerId === ownerId) &&
+      (!status || project.status === status) &&
+      (!name || project.name.toLowerCase().includes(name.toLowerCase()))
+    );
+
+A project is kept only if every supplied filter passes.
+
+If no ownerId was supplied, the owner condition passes for every project.
+
+If status was supplied, it must match.
+
+If name was supplied, it must occur in the project name.
+
+Return value:
+
+    return { count: projects.length, projects };
+
+The model receives both the number of results and the actual records.
+
+Function: get_tasks
+
+    function get_tasks({ projectId, assigneeId, assigneeName, status, pending, overdue } = {}) {
+
+This is the most important filtering tool. It handles task questions by project, person, status, pending state, and overdue state.
+
+Project ID validation:
+
+    if (projectId) {
+      const project = findById(data.projects, projectId);
+      if (!project) return {
+        error: `Unknown projectId '${projectId}'. Resolve the project with get_project first.`
+      };
+      projectId = project.id;
+    }
+
+A fake value such as get_project is rejected. A valid project ID is normalized to the stored capitalization.
+
+Assignee ID validation:
+
+    if (assigneeId) {
+      const assignee = findById(data.employees, assigneeId);
+      if (!assignee) return {
+        error: `Unknown assigneeId '${assigneeId}'. Resolve the employee name with get_employee and use the returned employee ID.`
+      };
+      assigneeId = assignee.id;
+    }
+
+This prevents a human name or fake tool name from being used as an ID.
+
+Assignee-name fallback:
+
+    if (assigneeName) {
+      const matches = data.employees.filter((employee) =>
+        employee.name.toLowerCase().includes(assigneeName.toLowerCase())
+      );
+
+This supports a direct safe fallback when the model sends assigneeName.
+
+No match returns an error.
+
+More than one match returns ambiguity. For example, John matches John Smith and John Doe, so the user must clarify.
+
+Exactly one match sets assigneeId to the canonical employee ID.
+
+Pending-query protection:
+
+    if (isTrue(pending) && !projectId && !assigneeId) {
+      return {
+        error: 'A pending task query needs an assigneeId, assigneeName, or projectId...'
+      };
+    }
+
+This prevents a person-specific pending question from accidentally returning every pending task in the system.
+
+Pending normalization:
+
+    if (isTrue(pending) || String(status || '').toLowerCase() === 'pending') {
+      pending = true;
+      status = undefined;
+    }
+
+Pending means both todo and in_progress. It is not a stored status by itself.
+
+If the model sends pending as the string "true", isTrue still recognizes it.
+
+If pending is true, status is cleared so an accidental status such as in_progress cannot hide todo tasks.
+
+Otherwise, status is normalized with normalizeStatus.
+
+Today's date:
+
+    const today = new Date().toISOString().slice(0, 10);
+
+This creates a YYYY-MM-DD date string, for example 2026-09-11.
+
+Task filter:
+
+    const tasks = data.tasks.filter((task) =>
+      (!projectId || task.projectId === projectId) &&
+      (!assigneeId || task.assigneeId === assigneeId) &&
+      (!status || task.status === status) &&
+      (!isTrue(pending) || task.status === 'todo' || task.status === 'in_progress') &&
+      (!isTrue(overdue) || (task.dueDate < today && task.status !== 'done'))
+    );
+
+Each condition is an AND condition.
+
+The project condition filters by project.
+
+The assignee condition filters by employee.
+
+The status condition filters by exact status when status is present.
+
+The pending condition allows todo and in_progress only.
+
+The overdue condition requires a date before today and status not equal to done.
+
+Return:
+
+    return { count: tasks.length, tasks };
+
+The model receives exact task data and can write a grounded answer.
+
+Function: get_task
+
+    function get_task({ id } = {}) {
+      const task = findById(data.tasks, id || '');
+      if (!task) throw new Error(`Task '${id || ''}' was not found`);
+      return task;
+    }
+
+This retrieves one task. If it does not exist, it throws an error. agent.js catches this error and sends it back to the model as a tool result instead of crashing the server.
+
+Function: calculate_project_metrics
+
+This finds one project by ID. If the project does not exist, it returns an error.
+
+It filters tasks belonging to that project.
+
+It counts:
+
+    doneTasks
+    inProgressTasks
+    todoTasks
+    overdueTasks
+
+It calculates completionRate as:
+
+    done task count / total task count * 100
+
+The Math.round call turns the result into a whole percentage.
+
+Exports:
+
+    module.exports = {
+      get_employee,
+      get_project,
+      get_projects,
+      get_tasks,
+      get_task,
+      calculate_project_metrics
+    };
+
+This exposes all six implementations to agent.js.
 
 
-*************************************************************************************************************
-And next I integrated LLM into this. The LLM should receives the relevant chunks retrieved from the database and uses them to answer the user's question.
+6. src/app.js AND THE HTTP ROUTE
+--------------------------------
 
-I stored sample questions and called them in the sample.js file and I stored the results in the results1.json file.
+src/app.js begins with:
 
-I used gemini-3.5-flash-lite as the LLM model.
-I created a /ask route to ask questions from POSTMAN
+    const express = require('express');
+
+This imports Express.
+
+Next:
+
+    require('dotenv').config();
+
+This loads environment variables if a .env file exists. The current agent mainly uses OLLAMA_MODEL, OLLAMA_URL, and PORT.
+
+Next:
+
+    const agentRouter = require('./routes/agent');
+
+This imports the agent route.
+
+Next:
+
+    const app = express();
+
+This creates the Express application.
+
+Next:
+
+    app.use(express.json())
+
+This enables JSON body parsing.
+
+Next:
+
+    const PORT = process.env.PORT || 3000;
+
+This uses the PORT environment variable or 3000 by default.
+
+Next:
+
+    app.use('/agent', agentRouter);
+
+This mounts the agent endpoint.
+
+Next:
+
+    app.get('/', (req, res) => {
+      res.json({ name: 'Project Management Agent', status: 'ok' });
+    });
+
+This is a simple health check. Opening GET / should return a status object.
+
+Next:
+
+    app.listen(PORT, () => {
+      console.log(`Project management agent listening on port ${PORT}`);
+    });
+
+This starts the web server.
+
+In src/routes/agent.js:
+
+    const express = require('express');
+
+Imports Express so a router can be created.
+
+    const { runAgent } = require('../agent');
+
+Imports the main agent function.
+
+    const router = express.Router();
+
+Creates a small router.
+
+    router.post('/', async (req, res) => {
+
+Defines a POST route. Because app.js mounted it at /agent, this becomes POST /agent.
+
+    const { message, model } = req.body;
+
+Reads the question and optional model from JSON.
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'message is required' });
+    }
+
+Rejects invalid requests with HTTP 400.
+
+    try {
+      return res.json({ message, ...(await runAgent(message, { model })) });
+    }
+
+Runs the agent and combines the original message with the returned agent result.
+
+The spread operator ... copies finalAnswer, model, iterations, log, and any other returned fields into the response object.
+
+    catch (error) {
+      return res.status(502).json({ error: error.message });
+    }
+
+If the connection to Ollama fails or another outer error occurs, return HTTP 502. This means the application server is reachable but its upstream AI service failed.
+
+    module.exports = router;
+
+Exports the router to app.js.
+
+
+7. DATA FILE EXPLAINED
+----------------------
+
+The employees array currently contains:
+
+    EMP1 John Smith
+    EMP2 John Doe
+    EMP3 Priya Shah
+    EMP4 Marcus Lee
+
+There are two employees named John intentionally. This tests ambiguity handling.
+
+The projects array contains:
+
+    PROJ_ALPHA owned by EMP3, active
+    PROJ_BETA  owned by EMP1, active
+    PROJ_GAMMA owned by EMP2, completed
+
+The tasks array connects tasks to projects and employees using IDs.
+
+For example:
+
+    {
+      "id": "TASK1",
+      "projectId": "PROJ_ALPHA",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-08-01",
+      "status": "in_progress"
+    }
+
+This means TASK1 belongs to Project Alpha and is assigned to John Smith.
+
+The IDs create relationships:
+
+    task.projectId  -> project.id
+    task.assigneeId -> employee.id
+    project.ownerId -> employee.id
+
+The LLM often needs multiple tools to follow these relationships.
+
+
+8. IMPORTANT EXAMPLE FLOWS
+--------------------------
+
+FLOW A - "What employees do we have?"
+
+1. Postman sends the question.
+2. The model chooses get_employee.
+3. It calls get_employee with an empty object.
+4. The function returns count 4 and all employees.
+5. The result is returned to Ollama.
+6. Ollama writes a list of the four employees.
+
+Expected tool log idea:
+
+    tool: get_employee
+    arguments: {}
+    result: { count: 4, employees: [...] }
+
+FLOW B - "How many pending tasks does Priya have?"
+
+Recommended chain:
+
+1. get_employee with name Priya.
+2. The tool returns EMP3.
+3. get_tasks with assigneeId EMP3 and pending true.
+4. The tool filters tasks to todo and in_progress.
+5. TASK6 is done, so it is excluded.
+6. The result count is zero.
+7. Ollama answers that Priya has no pending tasks.
+
+The implementation also supports:
+
+    get_tasks({ assigneeName: 'Priya', pending: true })
+
+This is safe because assigneeName is resolved to exactly one employee.
+
+FLOW C - "How many projects does Priya own?"
+
+Possible chain:
+
+1. get_employee with name Priya.
+2. Receive EMP3.
+3. get_projects with ownerId EMP3.
+4. Find Project Alpha.
+5. Return count 1.
+6. Ollama writes the final answer.
+
+The safe fallback is:
+
+    get_projects({ ownerName: 'Priya' })
+
+FLOW D - "Show me John's projects"
+
+1. get_employee searches John.
+2. It finds John Smith and John Doe.
+3. It returns ambiguous true and both matches.
+4. Ollama must ask which John the user means.
+5. The agent must not guess.
+
+FLOW E - "Who is responsible for overdue tasks in Project Alpha?"
+
+A likely chain is:
+
+1. get_project with name Project Alpha.
+2. Receive PROJ_ALPHA.
+3. get_tasks with projectId PROJ_ALPHA and overdue true.
+4. The tool checks dueDate before today's date and status not done.
+5. It returns overdue tasks.
+6. The model may call get_employee for each assignee ID.
+7. It combines task and employee information into a final answer.
+
+FLOW F - Missing project
+
+Question:
+
+    Show me tasks for Project Zeta
+
+The model should call get_project with Project Zeta.
+
+The function returns:
+
+    { error: 'No project found', query: ... }
+
+The error goes back to Ollama. The final answer should say that Project Zeta was not found. The model must not invent tasks.
+
+FLOW G - Missing task
+
+Question:
+
+    What is the status of TASK999?
+
+get_task throws an error because TASK999 does not exist.
+
+agent.js catches it and sends:
+
+    { error: "Task 'TASK999' was not found" }
+
+The model should report that the task was not found.
+
+FLOW H - Project metrics
+
+Question:
+
+    Give me metrics for Project Alpha
+
+The model should call calculate_project_metrics with PROJ_ALPHA.
+
+The tool calculates total, done, pending, overdue, and completion percentage. This may be answered with one tool call because the metrics tool performs the aggregation itself.
+
+
+9. WHAT THE POSTMAN RESPONSE FIELDS MEAN
+-----------------------------------------
+
+message
+
+The original user question sent in the request.
+
+finalAnswer
+
+The natural-language answer generated by Ollama after seeing tool results.
+
+model
+
+The Ollama model used for the request. It is llama3.2 by default unless a model is supplied in the request or OLLAMA_MODEL is configured.
+
+iterations
+
+How many model turns were needed. A simple question may take two iterations: one tool-call response and one final-answer response.
+
+log
+
+The audit trail. Each entry contains:
+
+    iteration
+
+Which model loop iteration made the call.
+
+    tool
+
+The selected function name.
+
+    arguments
+
+The exact arguments generated by the model.
+
+    result
+
+The exact JavaScript tool result.
+
+stopped
+
+This appears when the maximum iteration limit is reached. It normally has the value max_iterations.
+
+
+10. ERROR HANDLING AND DEFENSIVE DESIGN
+---------------------------------------
+
+There are several layers of protection.
+
+HTTP validation
+
+The route rejects requests without a string message.
+
+Ollama response validation
+
+askModel rejects a response without a message.
+
+Unknown-tool validation
+
+agent.js checks that toolImpl[toolName] exists.
+
+Tool exceptions
+
+Tool exceptions become { error: ... } and are sent back to the model.
+
+ID validation
+
+Employee, owner, project, and task IDs are checked against the data before filtering.
+
+Ambiguity handling
+
+Multiple employee matches are returned explicitly instead of guessed.
+
+Pending-task protection
+
+A pending task query without a person or project filter is rejected. This prevents a person-specific question from accidentally returning all pending tasks.
+
+Boolean normalization
+
+true and "true" are both recognized for pending and overdue filters.
+
+Status normalization
+
+Status text is converted to lowercase and spaces/hyphens become underscores.
+
+Iteration cap
+
+The agent stops after eight model iterations.
+
+These safeguards matter because an LLM can produce malformed or semantically wrong arguments even when the tool schema and prompt are clear.
+
+
+11. HOW THIS DIFFERS FROM HARD-CODED WORKFLOW LOGIC
+----------------------------------------------------
+
+A hard-coded design would inspect the question in JavaScript like this:
+
+    if (question.includes('overdue')) {
+      call get_project();
+      call get_tasks();
+    }
+
+This application does not do that. The JavaScript loop is generic:
+
+1. Ask the model.
+2. If it requests tools, execute the requested names.
+3. Send results back.
+4. Ask the model again.
+5. Stop when it returns normal text.
+
+The model chooses the tools and the order.
+
+The application still contains important business rules inside tools. For example, it knows what pending means and validates IDs. That is appropriate because exact data correctness belongs in application code, not only in model instructions.
+
+
+12. HOW TO TEST WITH POSTMAN
+----------------------------
+
+Start the server:
+
+    npm start
+
+Make sure Ollama is running and the selected model exists:
+
+    ollama list
+
+Create a Postman request:
+
+    Method: POST
+    URL: http://localhost:3000/agent
+
+Set header:
+
+    Content-Type: application/json
+
+Use body type raw and JSON.
+
+Test 1:
+
+    {
+      "message": "What employees do we have?"
+    }
+
+Test 2:
+
+    {
+      "message": "How many pending tasks does Priya have?"
+    }
+
+Test 3:
+
+    {
+      "message": "How many projects does Priya own?"
+    }
+
+Test 4:
+
+    {
+      "message": "Show me John's projects"
+    }
+
+Expected behavior: ask which John.
+
+Test 5:
+
+    {
+      "message": "Who is responsible for overdue tasks in Project Alpha?"
+    }
+
+Expected behavior: multiple tool calls and a log showing them.
+
+Test 6:
+
+    {
+      "message": "Show me tasks for Project Zeta"
+    }
+
+Expected behavior: report that the project does not exist.
+
+Test 7:
+
+    {
+      "message": "Give me metrics for Project Alpha"
+    }
+
+Expected behavior: calculate_project_metrics is called.
+
+Optional model override:
+
+    {
+      "message": "What employees do we have?",
+      "model": "llama3.2:latest"
+    }
+
+The model field is optional. If omitted, agent.js uses OLLAMA_MODEL or its default llama3.2.
+
+
+13. SIMPLE MENTAL MODEL FOR BEGINNERS
+--------------------------------------
+
+Think of the system as three people/components:
+
+THE USER
+
+Asks a natural-language question.
+
+THE LLM
+
+Acts like a decision-maker. It reads tool descriptions and decides what information it needs. It does not directly read JavaScript or execute functions.
+
+THE APPLICATION
+
+Acts like the hands. It receives the selected tool and arguments, runs trusted JavaScript against the JSON data, and sends the result back.
+
+The conversation repeats until the LLM has enough information to answer.
+
+In one sentence:
+
+    The LLM decides what to do; JavaScript does the actual work; the result goes back to the LLM for the final explanation.
+
+That is the central idea of this project.

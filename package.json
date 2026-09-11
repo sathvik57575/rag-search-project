@@ -1,23 +1,16 @@
 {
-  "name": "assignmemt",
+  "name": "project-management-agent",
   "version": "1.0.0",
-  "description": "Semantic search and RAG system with chunking, HF embeddings, pgvector, metadata filtering, and retrieval evaluation",
-  "main": "src/server.js",
+  "description": "JSON-backed project management agent demonstrating Ollama tool calling",
+  "main": "src/app.js",
   "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
-    "seed": "node scripts/seed.js data.json",
-    "seed:permissions": "node scripts/seed-permissions.js",
-    "test:permissions": "node scripts/test-permissions.js",
-    "eval": "node eval/evaluate.js",
-    "sample": "node eval/sample.js",
-    "db:init": "node db/init.js"
+    "test:tools": "node -e \"const t=require('./src/toolImpl'); const a=t.get_employee({name:'John'}); if(!a.ambiguous) throw Error('ambiguity failed'); if(t.get_tasks({projectId:'PROJ_ALPHA',overdue:true}).count!==2) throw Error('overdue failed'); if(!t.get_project({name:'Project Zeta'}).error) throw Error('missing project failed'); console.log('tool checks passed')\""
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "pg": "^8.12.0",
-    "pgvector": "^0.2.0",
+    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
-    "axios": "^1.7.7"
+    "express": "^4.19.2"
   }
 }
