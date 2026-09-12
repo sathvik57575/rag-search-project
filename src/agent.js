@@ -2,7 +2,7 @@ const axios = require('axios');
 const { toolDefinitions } = require('./tools');
 const toolImpl = require('./toolImpl');
 
-// const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'llama3.2';
+// const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'gemini-3.5-flash-lite';
 const DEFAULT_MODEL =  'llama3.2';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434/api/chat';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -11,7 +11,7 @@ const MAX_ITERATIONS = 8;
 
 const systemMessage = {
   role: 'system',
-  content: 'You are a project management agent. Use the tool that matches the entity named by the user: employees use get_employee, projects use get_project or get_projects, and tasks use get_task or get_tasks. When a task question names a person, make an actual get_employee tool call first and pass the returned employee ID to get_tasks. When an ownership question names a person, make an actual get_employee tool call first and pass the returned employee ID to get_projects. Never pass an empty assigneeId or ownerId, a person name as assigneeId or ownerId, or the string get_employee as an ID. Never write a proposed tool call as text or JSON in your answer. When the user asks about pending tasks, use pending=true. When the user asks what employees exist or asks to list employees without naming one, call get_employee with an empty object. Use tools for project data; never invent records. If a tool returns ambiguous matches, ask the user to clarify. Explain the answer concisely and mention relevant names, projects, and dates.'
+  content: 'You are a goal-oriented project management agent. Decompose each user goal into the smallest useful set of tool calls, choose the next tool from the evidence available, evaluate tool results before deciding whether more evidence is needed, and stop when the goal is answered. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present in the conversation and never repeat an identical tool call unless the user explicitly asks to retry it. Use tools for project data; never invent records. Resolve ambiguous people or projects by asking the user to clarify. Mutating tools require confirmation from the application; if a tool reports confirmation_required, explain the proposed change and stop. Prefer evidence-backed recommendations that identify the affected project, cause, and action.'
 };
 
 async function askModel(messages, model) {
@@ -133,11 +133,37 @@ function parseArguments(rawArguments) {
   return JSON.parse(rawArguments);
 }
 
+function validateToolArguments(toolName, argumentsObject) {
+  if (toolName === 'update_task_status') {
+    if (!/^TASK[0-9]+$/i.test(String(argumentsObject.taskId || ''))) {
+      return { error: `Invalid taskId '${argumentsObject.taskId || ''}'. Resolve the employee and list their tasks before updating each real task ID.` };
+    }
+    if (!['todo', 'in_progress', 'blocked', 'done'].includes(String(argumentsObject.status || '').toLowerCase())) {
+      return { error: `Invalid status '${argumentsObject.status || ''}'. Use todo, in_progress, blocked, or done.` };
+    }
+  }
+
+  if (toolName === 'assign_task') {
+    if (!/^TASK[0-9]+$/i.test(String(argumentsObject.taskId || ''))) {
+      return { error: `Invalid taskId '${argumentsObject.taskId || ''}'. Resolve and use a real task ID.` };
+    }
+    if (!/^EMP[0-9]+$/i.test(String(argumentsObject.assigneeId || ''))) {
+      return { error: `Invalid assigneeId '${argumentsObject.assigneeId || ''}'. Resolve the employee and use the returned employee ID.` };
+    }
+  }
+
+  return null;
+}
+
 async function runAgent(userMessage, options = {}) {
   if (!userMessage || typeof userMessage !== 'string') throw new Error('message is required');
   const model = options.model || DEFAULT_MODEL;
   const messages = [systemMessage, { role: 'user', content: userMessage }];
   const log = [];
+  const context = toolImpl.createContext({ persist: options.persist !== false });
+  const callCache = new Map();
+  const failures = [];
+  const mutatingTools = new Set(['update_task_status', 'assign_task']);
 
   for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration += 1) {
     const assistantMessage = await askModel(messages, model);
@@ -146,20 +172,59 @@ async function runAgent(userMessage, options = {}) {
     const calls = assistantMessage.tool_calls || [];
 
     if (calls.length === 0) {
-      return { finalAnswer: assistantMessage.content || '', model, iterations: iteration, log };
+      return {
+        finalAnswer: assistantMessage.content || '',
+        model,
+        iterations: iteration,
+        log,
+        state: { failures, recommendations: context.recommendations }
+      };
     }
 
     for (const call of calls) {
       const toolName = call.function && call.function.name;
       const argumentsValue = call.function && call.function.arguments;
       const argumentsObject = parseArguments(argumentsValue);
+      const cacheKey = `${toolName}:${JSON.stringify(argumentsObject, Object.keys(argumentsObject).sort())}`;
       let result;
 
-      try {
-        if (!toolImpl[toolName]) throw new Error(`Unknown tool '${toolName}'`);
-        result = toolImpl[toolName](argumentsObject);
-      } catch (error) {
-        result = { error: error.message };
+      const argumentError = validateToolArguments(toolName, argumentsObject);
+      if (argumentError) {
+        result = argumentError;
+        failures.push({ iteration, tool: toolName, error: argumentError.error });
+      }
+
+      if (!result && mutatingTools.has(toolName) && !options.confirmed) {
+        const confirmation = {
+          confirmation_required: true,
+          action: toolName,
+          arguments: argumentsObject,
+          message: 'Confirmation is required before changing task data. Resubmit the request with confirmed=true to proceed.'
+        };
+        log.push({ iteration, tool: toolName, arguments: argumentsObject, result: confirmation });
+        return {
+          finalAnswer: confirmation.message,
+          model,
+          iterations: iteration,
+          log,
+          pendingConfirmation: confirmation,
+          state: { failures, recommendations: context.recommendations }
+        };
+      }
+
+      if (!result && callCache.has(cacheKey)) {
+        result = { cached: true, result: callCache.get(cacheKey) };
+      }
+
+      if (!result) {
+        try {
+          if (!toolImpl[toolName]) throw new Error(`Unknown tool '${toolName}'`);
+          result = await toolImpl[toolName](argumentsObject, context);
+        } catch (error) {
+          result = { error: error.message, retryable: true };
+          failures.push({ iteration, tool: toolName, error: error.message });
+        }
+        callCache.set(cacheKey, result);
       }
 
       log.push({ iteration, tool: toolName, arguments: argumentsObject, result });
@@ -176,7 +241,8 @@ async function runAgent(userMessage, options = {}) {
     model,
     iterations: MAX_ITERATIONS,
     stopped: 'max_iterations',
-    log
+    log,
+    state: { failures, recommendations: context.recommendations }
   };
 }
 

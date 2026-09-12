@@ -90,6 +90,72 @@ const toolDefinitions = [
         additionalProperties: false
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'find_project_risks',
+      description: 'Analyze a project for delivery risks using overdue tasks, pending work, inconsistent dates, and assignee concentration. Use this when the goal asks for causes, risks, or delayed-project analysis.',
+      parameters: {
+        type: 'object',
+        properties: { projectId: { type: 'string' } },
+        required: ['projectId'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_task_status',
+      description: 'Change a task status. This is an impactful action and requires user confirmation. Use only when the user explicitly asks to change task status or approves a pending confirmation.',
+      parameters: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string' },
+          status: { type: 'string', description: 'todo, in_progress, blocked, or done' },
+          reason: { type: 'string' }
+        },
+        required: ['taskId', 'status'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'assign_task',
+      description: 'Assign or reassign a task to an employee. This is an impactful action and requires user confirmation. Resolve a person to an employee ID before calling this tool.',
+      parameters: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string' },
+          assigneeId: { type: 'string' },
+          reason: { type: 'string' }
+        },
+        required: ['taskId', 'assigneeId'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_recommendation',
+      description: 'Create a structured project-management recommendation or proposed action from evidence gathered during the goal. This does not change task data and is safe to execute.',
+      parameters: {
+        type: 'object',
+        properties: {
+          projectId: { type: 'string' },
+          title: { type: 'string' },
+          rationale: { type: 'string' },
+          action: { type: 'string' },
+          priority: { type: 'string' }
+        },
+        required: ['title', 'rationale', 'action'],
+        additionalProperties: false
+      }
+    }
   }
 ];
 

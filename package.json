@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
-    "test:tools": "node -e \"const t=require('./src/toolImpl'); const a=t.get_employee({name:'John'}); if(!a.ambiguous) throw Error('ambiguity failed'); if(t.get_tasks({projectId:'PROJ_ALPHA',overdue:true}).count!==2) throw Error('overdue failed'); if(!t.get_project({name:'Project Zeta'}).error) throw Error('missing project failed'); console.log('tool checks passed')\""
+    "test:tools": "node -e \"const t=require('./src/toolImpl'); const a=t.get_employee({name:'John'}); if(!a.ambiguous) throw Error('ambiguity failed'); if(t.get_tasks({projectId:'PROJ_ALPHA',overdue:true}).count!==2) throw Error('overdue failed'); if(!t.get_project({name:'Project Zeta'}).error) throw Error('missing project failed'); console.log('tool checks passed')\"",
+    "test:agent": "node test/goal-agent.test.js"
   },
   "dependencies": {
     "axios": "^1.7.7",

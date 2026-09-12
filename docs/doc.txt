@@ -1,0 +1,131 @@
+Goal-oriented project management agent: model comparison, limitations, and the right design boundary
+
+So the project already has a tool-calling agent pattern. The model picks a tool, the app runs it, and then the outcome goes back into the model. That setup works well for simple question answering and basic task lookup, but the real question is where the intelligence belongs.
+
+The model can decide what looks relevant and which tool is likely to help. But the application has to make sure the result is actually correct, especially for things like employee IDs, task statuses, dates, and state changes.
+
+This matters a lot in cases like:
+- getting all unfinished tasks for John Doe that are due before this week
+- identifying delayed projects and the reasons behind them
+
+The model is not a reliable source of business logic. It is good at planning a route through the tools, but the app has to enforce the actual correctness rules.
+
+What we saw in this project
+
+Llama 3.2 usually struggles when the task needs a bit of reasoning across multiple rules at once. It tends to grab the wrong tool or pass the wrong values when the request includes things like "before this week"
+
+The usual pattern is rough and a bit messy:
+- it calls get_tasks without a proper assignee ID
+- it tries to infer the right person from a name instead of resolving the actual employee record
+- it may fetch too much data and then guess from that
+- it can get the date logic wrong because "before this week" is a relative phrase, not a clean value
+
+That leads to results that sound plausible but are not actually right.
+
+
+Gemini 3.5 Flash Lite is noticeably better at this. It is more likely to:
+- resolve John Doe to the proper employee record
+- fetch the relevant tasks for that employee
+- understand the incomplete vs completed distinction
+- apply the due-date filter more correctly
+- continue with the next step until the goal is reached
+
+It still benefits from better tool design, but it is clearly stronger at handling the sequence of calls and the logic behind them.
+
+The main point is the model can help choose the next action, but it should not be trusted to carry out the final business logic by itself.
+
+The application needs to own the correctness-critical parts
+
+The app should guarantee all of the following:
+- task IDs are valid
+- employee IDs are resolved exactly, not guessed from names
+- relative phrases like "before this week" are converted into real date boundaries
+- status values are normalized and validated
+- due-date comparisons use proper date logic, not loose string comparisons
+- writes are blocked unless confirmed
+- duplicate calls are avoided or cached during a single goal flow
+- state stays isolated per request
+- changes are only persisted after validation
+
+That is the actual safety boundary. The model can plan, but the app must enforce.
+
+Where LLMs should decide
+
+The LLM should decide things like:
+- which entity is relevant
+- which tool is the best next step
+- whether the user has enough information to answer the question
+- whether a recommendation or mutation is needed
+- whether a follow-up action makes sense after the first result
+
+That is the strategic part. The model is good at intent and orchestration.
+
+Where the application should decide
+
+The application should decide:
+- the exact task or employee ID to use
+- the correct date window for a query
+- whether a status filter is valid
+- whether a task is truly incomplete or overdue
+- whether a mutation is allowed and safe
+- whether the final result is trustworthy enough to persist
+
+This is the operational part. This is where the system has to be deterministic and correct.
+
+Why Llama struggles here
+
+Llama is especially weak when the request mixes several rules at once:
+- status filter
+- assignee filter
+- time window
+- completion logic
+- sequence of tool calls
+
+When that happens, the model tends to do broad fetches and then guess from a partial result. That is not the same as answering the actual question correctly. It may look reasonable, but it is not safe enough for a project-management workflow.
+
+This is why we need a better tool contract.
+
+The design principle is to reduce the model burden, not add more low-level work for it.
+
+The tool set should not be a bunch of generic primitives that force the model to do all the filtering itself. It should be a smaller set of more meaningful, domain-aware tools that already encode the business logic.
+
+Instead of just exposing stuff like get_employee, get_projects, get_tasks, update_task_status, and assign_task, we should add tools that represent actual business queries, such as:
+- get_employee_tasks
+- get_uncompleted_tasks_for_employee
+- get_tasks_due_before_date
+- get_projects_with_overdue_tasks
+- resolve_time_window
+
+These should do the real work in the app layer: filter the real data, compute the date boundary, validate the IDs, and return the correct subset.
+
+The point is not to make the model smarter in the abstract. The point is to give it fewer, cleaner decisions and keep the hard correctness logic in the app.
+
+A better pattern is:
+- model decides intent and tool choice
+- app does exact filtering and validation
+- app returns a clear, canonical result
+- mutation only happens after explicit confirmation
+
+That gives us a much more reliable flow and avoids the kinds of reasoning errors we saw from Llama.
+
+Recommendation for this project
+
+The current working is good, but it still leaves too much business logic to the model. The biggest improvement would be to add app-side helpers for the tricky cases, especially:
+- before-this-week and before-date filtering
+- unfinished task selection
+- employee-to-task resolution
+- bulk mutations on verified task IDs
+
+The boundary should be clean:
+- LLM chooses the intent and the tool
+- application computes the exact result and enforces the rules
+
+
+
+Short version
+
+Llama is not consistent enough for complex multi-step project-management tasks when date logic and task filtering are involved. Gemini handles these cases much more reliably in this project. 
+
+The right design is to move the correctness-critical logic into the application layer and give the model a smaller, clearer set of domain-aware tools. That keeps the system dependable without asking the model to do things it is not reliable at.
+
+That is the separation that gives us the best balance of accuracy, safety, and control.
