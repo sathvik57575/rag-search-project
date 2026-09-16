@@ -65,7 +65,7 @@ const toolDefinitions = [
     type: 'function',
     function: {
       name: 'get_projects',
-      description: 'List projects, optionally filtered by owner ID, owner employee name, status, or project name. Prefer get_employee first and then pass its ID as ownerId. If using ownerName, resolve exactly one employee; never return all projects for a person-specific ownership question.',
+      description: 'List projects, optionally filtered by owner ID, owner employee name, status, or project name. Prefer get_employee first and then pass its ID as ownerId. If using ownerName, resolve exactly one employee; never return all projects for a person-specific ownership question. If a person name is mistakenly passed as name and matches an employee exactly, interpret it as an owner filter when it is not a project name.',
       parameters: {
         type: 'object',
         properties: {

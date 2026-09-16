@@ -46,7 +46,15 @@ function testInvalidDataDoesNotGuess() {
   assert(tasks.error.includes('Unknown projectId'));
 }
 
+function testEmployeeNameOwnershipFallback() {
+  const context = tools.createContext();
+  const result = tools.get_projects({ name: 'Priya Shah' }, context);
+  assert.strictEqual(result.count, 1);
+  assert.strictEqual(result.projects[0].id, 'PROJ_ALPHA');
+}
+
 testPlanAndReplan();
 testRiskEvidence();
 testInvalidDataDoesNotGuess();
+testEmployeeNameOwnershipFallback();
 console.log('planning and risk checks passed');

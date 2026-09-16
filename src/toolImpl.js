@@ -226,6 +226,18 @@ function get_project({ id, name } = {}, context) {
 
 function get_projects({ ownerId, ownerName, status, name } = {}, context) {
   const contextData = getContextData(context);
+  if (!ownerId && !ownerName && name) {
+    const matchingProject = contextData.projects.some((project) =>
+      project.name.toLowerCase().includes(name.toLowerCase()),
+    );
+    const matchingEmployee = contextData.employees.filter(
+      (employee) => employee.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (!matchingProject && matchingEmployee.length === 1) {
+      ownerId = matchingEmployee[0].id;
+      name = undefined;
+    }
+  }
   if (ownerId) {
     const owner = findById(contextData.employees, ownerId);
     if (!owner) {
