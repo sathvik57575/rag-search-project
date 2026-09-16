@@ -191,6 +191,45 @@ function rememberProjectsOwnedBy(userMessage, memorySession) {
   return { ownerName, employee, projectsResult, saved };
 }
 
+function extractRememberPreference(userMessage) {
+  const match = userMessage.match(/\bremember\s+that\s+(?:i\s+)?(.+)$/i);
+  return match ? match[1].trim().replace(/[.?!]+$/, '') : null;
+}
+
+function rememberPreference(userMessage, memorySession) {
+  const content = extractRememberPreference(userMessage);
+  if (!content) return null;
+  const lowerContent = content.toLowerCase();
+  const key = lowerContent.includes('focus') || lowerContent.includes('priority')
+    ? 'focus'
+    : 'preference';
+  const saved = memory.remember({
+    userId: memorySession.userId,
+    key,
+    content: content.charAt(0).toUpperCase() + content.slice(1) + '.',
+    type: 'preference',
+    tags: ['user-preference'],
+  }, memorySession);
+  return { saved };
+}
+
+function answerMemoryQuestion(userMessage, memorySession) {
+  if (!/\b(what|which)\b.*\b(?:want|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage)) {
+    return null;
+  }
+  const result = memory.search({ userId: memorySession.userId, query: 'focus priority remember' }, memorySession);
+  if (!result.memories.length) {
+    return {
+      finalAnswer: 'I do not have a saved preference for you yet.',
+      memories: [],
+    };
+  }
+  return {
+    finalAnswer: result.memories.map((item) => item.content).join(' '),
+    memories: result.memories,
+  };
+}
+
 async function runAgent(userMessage, options = {}) {
   if (!userMessage || typeof userMessage !== 'string') throw new Error('message is required');
   const model = options.model || DEFAULT_MODEL;
@@ -217,6 +256,44 @@ async function runAgent(userMessage, options = {}) {
         plan: null,
         planHistory: [],
         memoriesUsed: [],
+        userId: memorySession.userId,
+        conversationId: memorySession.conversationId,
+      },
+    };
+  }
+  const preferenceResult = rememberPreference(userMessage, memorySession);
+  if (preferenceResult && preferenceResult.saved) {
+    return {
+      finalAnswer: 'I saved that preference to your memory.',
+      model,
+      iterations: 0,
+      log: [{ tool: 'remember', result: preferenceResult.saved }],
+      executionTrace: [{ tool: 'remember', outcome: 'completed', observed: preferenceResult.saved }],
+      state: {
+        failures: [],
+        recommendations: [],
+        plan: null,
+        planHistory: [],
+        memoriesUsed: [],
+        userId: memorySession.userId,
+        conversationId: memorySession.conversationId,
+      },
+    };
+  }
+  const directMemoryAnswer = answerMemoryQuestion(userMessage, memorySession);
+  if (directMemoryAnswer) {
+    return {
+      finalAnswer: directMemoryAnswer.finalAnswer,
+      model,
+      iterations: 0,
+      log: [],
+      executionTrace: [],
+      state: {
+        failures: [],
+        recommendations: [],
+        plan: null,
+        planHistory: [],
+        memoriesUsed: directMemoryAnswer.memories,
         userId: memorySession.userId,
         conversationId: memorySession.conversationId,
       },

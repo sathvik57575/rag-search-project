@@ -52,11 +52,35 @@ async function testRememberProjectsIntent() {
   assert.strictEqual(memory.search({ userId: 'naresh', query: 'Priya projects' }, { memoryPath }).count, 1);
 }
 
+async function testRememberPreferenceAndIsolation() {
+  cleanMemory();
+  const saved = await runAgent('remember that I want to focus on Project Alpha', {
+    userId: 'sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(saved.finalAnswer.includes('saved'));
+  const ownMemory = await runAgent('what project do I want to remember today', {
+    userId: 'sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(ownMemory.finalAnswer.includes('Project Alpha'));
+  const otherMemory = await runAgent('what project do I want to remember today', {
+    userId: 'another-user',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(otherMemory.finalAnswer.includes('do not have a saved preference'));
+  assert.strictEqual(memory.search({ userId: 'another-user', query: 'Project Alpha' }, { memoryPath }).count, 0);
+}
+
 async function run() {
   testSaveUpdateForgetAndIsolation();
   testMemoryToolsUseUserSession();
   testShortTermConversationIsolation();
   await testRememberProjectsIntent();
+  await testRememberPreferenceAndIsolation();
   cleanMemory();
   console.log('memory checks passed');
 }
