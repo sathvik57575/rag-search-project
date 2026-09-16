@@ -58,7 +58,7 @@ async function testComplexGoal() {
     }, 'sig-5'),
     textResponse('Project Alpha is delayed because of overdue work. I recommend reviewing ownership and unblocking those tasks.')
   ];
-  const result = await withGeminiResponses(responses, () => runAgent('Find delayed projects, identify causes, and recommend actions.'));
+  const result = await withGeminiResponses(responses, () => runAgent('Find delayed projects, identify causes, and recommend actions.', { model: 'gemini-3.5-flash-lite' }));
   assert.strictEqual(result.log.length, 5);
   assert.strictEqual(result.log[4].tool, 'create_recommendation');
   assert(result.finalAnswer.includes('Project Alpha'));
@@ -72,7 +72,7 @@ async function testFailureRecoveryAndDuplicateAvoidance() {
     functionResponse('get_tasks', { projectId: 'PROJ_ALPHA', pending: true }, 'sig-3'),
     textResponse('The task was missing, so I used the available pending tasks for Project Alpha. The repeated lookup was unnecessary.')
   ];
-  const result = await withGeminiResponses(responses, () => runAgent('Find the missing task and then report pending work for Alpha.'));
+  const result = await withGeminiResponses(responses, () => runAgent('Find the missing task and then report pending work for Alpha.', { model: 'gemini-3.5-flash-lite' }));
   assert.strictEqual(result.state.failures.length, 1);
   assert.strictEqual(result.log[2].result.cached, true);
   assert(result.finalAnswer.includes('pending'));
@@ -82,7 +82,7 @@ async function testMutationConfirmation() {
   const responses = [
     functionResponse('update_task_status', { taskId: 'TASK1', status: 'done', reason: 'Verified complete' }, 'sig-1')
   ];
-  const pending = await withGeminiResponses(responses, () => runAgent('Mark TASK1 done.'));
+  const pending = await withGeminiResponses(responses, () => runAgent('Mark TASK1 done.', { model: 'gemini-3.5-flash-lite' }));
   assert(pending.pendingConfirmation);
   assert.strictEqual(pending.log[0].result.confirmation_required, true);
 
@@ -90,7 +90,7 @@ async function testMutationConfirmation() {
     functionResponse('update_task_status', { taskId: 'TASK1', status: 'done', reason: 'Verified complete' }, 'sig-1'),
     textResponse('TASK1 was marked done.')
   ];
-  const confirmed = await withGeminiResponses(confirmedResponses, () => runAgent('Mark TASK1 done.', { confirmed: true, persist: false }));
+  const confirmed = await withGeminiResponses(confirmedResponses, () => runAgent('Mark TASK1 done.', { model: 'gemini-3.5-flash-lite', confirmed: true, persist: false }));
   assert.strictEqual(confirmed.log[0].result.updated, true);
   assert.strictEqual(confirmed.log[0].result.previousStatus, 'in_progress');
 }
@@ -100,7 +100,7 @@ async function testAmbiguousInput() {
     functionResponse('get_employee', { name: 'John' }, 'sig-1'),
     textResponse('There are multiple employees named John. Please specify John Smith or John Doe.')
   ];
-  const result = await withGeminiResponses(responses, () => runAgent('Show me John\'s pending tasks.'));
+  const result = await withGeminiResponses(responses, () => runAgent('Show me John\'s pending tasks.', { model: 'gemini-3.5-flash-lite' }));
   assert.strictEqual(result.log[0].result.ambiguous, true);
   assert(result.finalAnswer.includes('multiple'));
 }
@@ -112,7 +112,7 @@ async function testInvalidMutationRecovery() {
     functionResponse('get_tasks', { assigneeId: 'EMP2', pending: true }, 'sig-3'),
     textResponse('John Doe has no pending tasks to update.')
   ];
-  const result = await withGeminiResponses(responses, () => runAgent('Make all John Doe tasks completed.', { confirmed: true, persist: false }));
+  const result = await withGeminiResponses(responses, () => runAgent('Make all John Doe tasks completed.', { model: 'gemini-3.5-flash-lite', confirmed: true, persist: false }));
   assert(result.state.failures.some((failure) => failure.error.includes('Invalid taskId')));
   assert.strictEqual(result.log[0].result.error.startsWith('Invalid taskId'), true);
   assert.strictEqual(result.log[2].tool, 'get_tasks');

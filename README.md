@@ -1,11 +1,11 @@
  # Project Management Agent
 
-This project demonstrates a goal-oriented project-management agent using Gemini native tool calling. It uses exact lookups and analysis over `data/pm-data.json`; it does not use embeddings, chunking, vector search, or PostgreSQL.
+This project demonstrates a goal-oriented project-management agent using local Ollama tool calling. It uses exact lookups and analysis over `data/pm-data.json`; it does not use embeddings, chunking, vector search, or PostgreSQL.
 
 ## Run
 
 1. Install dependencies: `npm install`
-2. Set `GEMINI_API_KEY` and `DEFAULT_MODEL=gemini-3.5-flash-lite` in `.env`.
+2. Start Ollama and pull the local models you want to use: `ollama pull qwen3:4b` and/or `ollama pull llama3.2`.
 3. Start the API: `npm start`
 4. Ask the agent:
 
@@ -13,19 +13,40 @@ This project demonstrates a goal-oriented project-management agent using Gemini 
 Invoke-RestMethod http://localhost:3000/agent -Method Post -ContentType 'application/json' -Body '{"message":"Who is responsible for the overdue tasks in Project Alpha?"}'
 ```
 
-Optional environment variables are `OLLAMA_URL`, `OLLAMA_MODEL`, and `PORT`.
+The default model is `qwen3:4b`. Choose a model per request with the optional `model` field:
+
+```json
+{
+	"model": "llama3.2",
+	"message": "Analyze all active projects and generate a prioritized risk report."
+}
+```
+
+Supported examples are `qwen3:4b` and `llama3.2` through Ollama, or `gemini-3.5-flash-lite` through Gemini when `GEMINI_API_KEY` is configured. The request value takes precedence; omitting `model` uses `qwen3:4b`.
+
+Optional environment variables are `OLLAMA_URL` and `PORT`. Configure `GEMINI_API_KEY` only when using the Gemini model.
 
 ## Architecture
 
-`POST /agent` sends the user goal and all tool schemas to Gemini. When Gemini returns a function call, `src/agent.js` executes the selected function from `src/toolImpl.js`, records the tool name, arguments, and result, then sends the result back to Gemini. The model chooses the next step dynamically and the loop ends when it returns a complete answer or reaches an eight-iteration safety limit.
+`POST /agent` sends the user goal and all tool schemas to Ollama. The model can create a plan, choose the next function from observed evidence, revise the plan after failures or conflicting data, and stop when it has enough evidence or cannot continue. The response includes `state.plan`, `state.planHistory`, `executionTrace`, failures, and recommendations.
 
-Available tools include `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `calculate_project_metrics`, `find_project_risks`, `update_task_status`, `assign_task`, and `create_recommendation`.
+Available tools include `create_plan`, `replan`, `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `get_project_metrics`, `get_project_updates`, `find_project_risks`, `update_task_status`, `assign_task`, and `create_recommendation`.
 
 Each request gets an isolated context containing tool results, failures, and recommendations. Repeated identical calls are served from the request cache. Status and assignment changes stop with `pendingConfirmation`; repeat the request with `"confirmed": true` to authorize the mutation.
 
 ## Test the data tools
 
-Run `npm run test:tools`. This checks duplicate-name ambiguity, overdue filtering, missing projects, metrics, and missing-task failures without requiring Ollama.
+Run `npm run test:tools` and `npm run test:planning`. These checks cover duplicate-name ambiguity, overdue filtering, missing projects, plan revision, no-task projects, stale/conflicting updates, and invalid data without requiring Ollama.
+
+The default seed expands to 24 employees, 9 projects, 105 tasks, and 24 updates. It includes overdue and blocked work, a project with no tasks, malformed task data, stale updates, and conflicting update risk levels. Custom `PM_DATA_PATH` fixtures are not expanded, so API/tool failure scenarios remain easy to test.
+
+Failure and replanning cases:
+
+1. A missing task returns an explicit tool failure; the model can switch to a scoped pending-task query.
+2. Invalid task or employee IDs are rejected before mutation; the model must resolve real records first.
+3. A project with no tasks is reported as `no_task_coverage`, not as healthy or complete.
+4. Stale and conflicting project updates are returned as separate evidence, so the model can replan around data validation instead of silently selecting one.
+5. A local-model/API failure stops the run with `model_error` and an incomplete-evidence message; it never fabricates a risk report.
 
 Useful agent scenarios:
 

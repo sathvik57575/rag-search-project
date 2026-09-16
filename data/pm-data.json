@@ -3,22 +3,146 @@
     {
       "id": "EMP1",
       "name": "John Smith",
+      "department": "Engineering",
       "role": "Engineer"
     },
     {
       "id": "EMP2",
       "name": "John Doe",
+      "department": "Operations",
       "role": "Designer"
     },
     {
       "id": "EMP3",
       "name": "Priya Shah",
+      "department": "Engineering",
       "role": "Product Manager"
     },
     {
       "id": "EMP4",
       "name": "Marcus Lee",
+      "department": "Engineering",
       "role": "QA Engineer"
+    },
+    {
+      "id": "EMP5",
+      "name": "Team Member 5",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP6",
+      "name": "Team Member 6",
+      "department": "Operations",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP7",
+      "name": "Team Member 7",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP8",
+      "name": "Team Member 8",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP9",
+      "name": "Team Member 9",
+      "department": "Engineering",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP10",
+      "name": "Team Member 10",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP11",
+      "name": "Team Member 11",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP12",
+      "name": "Team Member 12",
+      "department": "Operations",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP13",
+      "name": "Team Member 13",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP14",
+      "name": "Team Member 14",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP15",
+      "name": "Team Member 15",
+      "department": "Engineering",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP16",
+      "name": "Team Member 16",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP17",
+      "name": "Team Member 17",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP18",
+      "name": "Team Member 18",
+      "department": "Operations",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP19",
+      "name": "Team Member 19",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP20",
+      "name": "Team Member 20",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP21",
+      "name": "Team Member 21",
+      "department": "Engineering",
+      "role": "Analyst"
+    },
+    {
+      "id": "EMP22",
+      "name": "Team Member 22",
+      "department": "Operations",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP23",
+      "name": "Team Member 23",
+      "department": "Engineering",
+      "role": "Engineer"
+    },
+    {
+      "id": "EMP24",
+      "name": "Team Member 24",
+      "department": "Operations",
+      "role": "Analyst"
     }
   ],
   "projects": [
@@ -26,19 +150,82 @@
       "id": "PROJ_ALPHA",
       "name": "Project Alpha",
       "status": "active",
-      "ownerId": "EMP3"
+      "ownerId": "EMP3",
+      "startDate": "2026-01-01",
+      "deadline": "2026-09-30",
+      "budget": 250000
     },
     {
       "id": "PROJ_BETA",
       "name": "Project Beta",
       "status": "active",
-      "ownerId": "EMP1"
+      "ownerId": "EMP1",
+      "startDate": "2026-01-01",
+      "deadline": "2026-10-15",
+      "budget": 180000
     },
     {
       "id": "PROJ_GAMMA",
       "name": "Project Gamma",
       "status": "completed",
-      "ownerId": "EMP2"
+      "ownerId": "EMP2",
+      "startDate": "2026-01-01",
+      "deadline": "2026-09-30",
+      "budget": 120000
+    },
+    {
+      "id": "PROJ_DELTA",
+      "name": "Project Delta",
+      "status": "active",
+      "ownerId": "EMP5",
+      "startDate": "2026-01-15",
+      "deadline": "2026-10-15",
+      "budget": 210000
+    },
+    {
+      "id": "PROJ_EPSILON",
+      "name": "Project Epsilon",
+      "status": "active",
+      "ownerId": "EMP6",
+      "startDate": "2026-01-15",
+      "deadline": "2026-11-15",
+      "budget": 165000
+    },
+    {
+      "id": "PROJ_ZETA",
+      "name": "Project Zeta",
+      "status": "active",
+      "ownerId": "EMP7",
+      "startDate": "2026-01-15",
+      "deadline": "2026-10-15",
+      "budget": 195000
+    },
+    {
+      "id": "PROJ_ETA",
+      "name": "Project Eta",
+      "status": "active",
+      "ownerId": "EMP8",
+      "startDate": "2026-01-15",
+      "deadline": "2026-11-15",
+      "budget": 150000
+    },
+    {
+      "id": "PROJ_THETA",
+      "name": "Project Theta",
+      "status": "active",
+      "ownerId": "EMP9",
+      "startDate": "2026-01-15",
+      "deadline": "2026-10-15",
+      "budget": 175000
+    },
+    {
+      "id": "PROJ_EMPTY",
+      "name": "Project Empty",
+      "status": "active",
+      "ownerId": "EMP10",
+      "startDate": "2026-01-15",
+      "deadline": "2026-11-15",
+      "budget": 90000
     }
   ],
   "tasks": [
@@ -97,6 +284,1154 @@
       "assigneeId": "EMP4",
       "dueDate": "2027-09-20",
       "status": "done"
+    },
+    {
+      "id": "TASK7",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 7",
+      "assigneeId": "EMP7",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK8",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 8",
+      "assigneeId": "EMP8",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK9",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 9",
+      "assigneeId": "EMP9",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 12,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK10",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 10",
+      "assigneeId": "EMP10",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK11",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 11",
+      "assigneeId": "EMP11",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK12",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 12",
+      "assigneeId": "EMP12",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK13",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 13",
+      "assigneeId": "EMP13",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK14",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 14",
+      "assigneeId": "EMP14",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK15",
+      "projectId": "PROJ_ALPHA",
+      "title": "Delivery task 15",
+      "assigneeId": "EMP15",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK16",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 16",
+      "assigneeId": "EMP16",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK17",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 17",
+      "assigneeId": "EMP17",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK18",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 18",
+      "assigneeId": "EMP18",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 11,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK19",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 19",
+      "assigneeId": "EMP19",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK20",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 20",
+      "assigneeId": "EMP20",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK21",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 21",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK22",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 22",
+      "assigneeId": "EMP2",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK23",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 23",
+      "assigneeId": "EMP3",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK24",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 24",
+      "assigneeId": "EMP4",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK25",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 25",
+      "assigneeId": "EMP5",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK26",
+      "projectId": "PROJ_BETA",
+      "title": "Delivery task 26",
+      "assigneeId": "EMP6",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK27",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 27",
+      "assigneeId": "EMP7",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 10,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK28",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 28",
+      "assigneeId": "EMP8",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK29",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 29",
+      "assigneeId": "EMP9",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK30",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 30",
+      "assigneeId": "EMP10",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK31",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 31",
+      "assigneeId": "EMP11",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK32",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 32",
+      "assigneeId": "EMP12",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK33",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 33",
+      "assigneeId": "EMP13",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK34",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 34",
+      "assigneeId": "EMP14",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK35",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 35",
+      "assigneeId": "EMP15",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK36",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 36",
+      "assigneeId": "EMP16",
+      "dueDate": "2026-08-01",
+      "status": "blocked",
+      "estimatedHours": 9,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK37",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 37",
+      "assigneeId": "EMP17",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK38",
+      "projectId": "PROJ_GAMMA",
+      "title": "Delivery task 38",
+      "assigneeId": "EMP18",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK39",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 39",
+      "assigneeId": "EMP19",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK40",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 40",
+      "assigneeId": "EMP20",
+      "dueDate": "2026-08-01",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK41",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 41",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK42",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 42",
+      "assigneeId": "EMP2",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK43",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 43",
+      "assigneeId": "EMP3",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK44",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 44",
+      "assigneeId": "EMP4",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK45",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 45",
+      "assigneeId": "EMP5",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 8,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK46",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 46",
+      "assigneeId": "EMP6",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK47",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 47",
+      "assigneeId": "EMP7",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK48",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 48",
+      "assigneeId": "EMP8",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK49",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 49",
+      "assigneeId": "EMP9",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK50",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 50",
+      "assigneeId": "EMP10",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK51",
+      "projectId": "PROJ_DELTA",
+      "title": "Delivery task 51",
+      "assigneeId": "EMP11",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK52",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 52",
+      "assigneeId": "EMP12",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK53",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 53",
+      "assigneeId": "EMP13",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK54",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 54",
+      "assigneeId": "EMP14",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 12,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK55",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 55",
+      "assigneeId": "EMP15",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK56",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 56",
+      "assigneeId": "EMP16",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK57",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 57",
+      "assigneeId": "EMP17",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK58",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 58",
+      "assigneeId": "EMP18",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK59",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 59",
+      "assigneeId": "EMP19",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK60",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 60",
+      "assigneeId": "EMP20",
+      "dueDate": "2026-08-01",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK61",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 61",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK62",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 62",
+      "assigneeId": "EMP2",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK63",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 63",
+      "assigneeId": "EMP3",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 11,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK64",
+      "projectId": "PROJ_EPSILON",
+      "title": "Delivery task 64",
+      "assigneeId": "EMP4",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK65",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 65",
+      "assigneeId": "EMP5",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK66",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 66",
+      "assigneeId": "EMP6",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK67",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 67",
+      "assigneeId": "EMP7",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK68",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 68",
+      "assigneeId": "EMP8",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK69",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 69",
+      "assigneeId": "EMP9",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK70",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 70",
+      "assigneeId": "EMP10",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK71",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 71",
+      "assigneeId": "EMP11",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK72",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 72",
+      "assigneeId": "EMP12",
+      "dueDate": "2026-08-01",
+      "status": "blocked",
+      "estimatedHours": 10,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK73",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 73",
+      "assigneeId": "EMP13",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK74",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 74",
+      "assigneeId": "EMP14",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK75",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 75",
+      "assigneeId": "EMP15",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK76",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 76",
+      "assigneeId": "EMP16",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK77",
+      "projectId": "PROJ_ZETA",
+      "title": "Delivery task 77",
+      "assigneeId": "EMP17",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK78",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 78",
+      "assigneeId": "EMP18",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK79",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 79",
+      "assigneeId": "EMP19",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK80",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 80",
+      "assigneeId": "EMP20",
+      "dueDate": "2026-08-01",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK81",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 81",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 9,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK82",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 82",
+      "assigneeId": "EMP2",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK83",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 83",
+      "assigneeId": "EMP3",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK84",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 84",
+      "assigneeId": "EMP4",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK85",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 85",
+      "assigneeId": "EMP5",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK86",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 86",
+      "assigneeId": "EMP6",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK87",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 87",
+      "assigneeId": "EMP7",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK88",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 88",
+      "assigneeId": "EMP8",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK89",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 89",
+      "assigneeId": "EMP9",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK90",
+      "projectId": "PROJ_ETA",
+      "title": "Delivery task 90",
+      "assigneeId": "EMP10",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 8,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK91",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 91",
+      "assigneeId": "EMP11",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK92",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 92",
+      "assigneeId": "EMP12",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK93",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 93",
+      "assigneeId": "EMP13",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK94",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 94",
+      "assigneeId": "EMP14",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 12,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK95",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 95",
+      "assigneeId": "EMP15",
+      "dueDate": "2026-10-20",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 11
+    },
+    {
+      "id": "TASK96",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 96",
+      "assigneeId": "EMP16",
+      "dueDate": "2026-08-01",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 12
+    },
+    {
+      "id": "TASK97",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 97",
+      "assigneeId": "EMP17",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 13
+    },
+    {
+      "id": "TASK98",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 98",
+      "assigneeId": "EMP18",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 14
+    },
+    {
+      "id": "TASK99",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 99",
+      "assigneeId": "EMP19",
+      "dueDate": "2026-10-20",
+      "status": "blocked",
+      "estimatedHours": 12,
+      "actualHours": 6
+    },
+    {
+      "id": "TASK100",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 100",
+      "assigneeId": "EMP20",
+      "dueDate": "2026-08-01",
+      "status": "done",
+      "estimatedHours": 8,
+      "actualHours": 7
+    },
+    {
+      "id": "TASK101",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 101",
+      "assigneeId": "EMP1",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 9,
+      "actualHours": 8
+    },
+    {
+      "id": "TASK102",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 102",
+      "assigneeId": "EMP2",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 10,
+      "actualHours": 9
+    },
+    {
+      "id": "TASK103",
+      "projectId": "PROJ_THETA",
+      "title": "Delivery task 103",
+      "assigneeId": "EMP3",
+      "dueDate": "2026-10-20",
+      "status": "todo",
+      "estimatedHours": 11,
+      "actualHours": 10
+    },
+    {
+      "id": "TASK104",
+      "projectId": "PROJ_DELTA",
+      "title": "Invalid status record",
+      "assigneeId": "EMP999",
+      "dueDate": null,
+      "status": "unknown"
+    }
+  ],
+  "project_updates": [
+    {
+      "id": "UPD1",
+      "projectId": "PROJ_ALPHA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "high"
+    },
+    {
+      "id": "UPD2",
+      "projectId": "PROJ_BETA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD3",
+      "projectId": "PROJ_GAMMA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD4",
+      "projectId": "PROJ_DELTA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD5",
+      "projectId": "PROJ_EPSILON",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD6",
+      "projectId": "PROJ_ZETA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD7",
+      "projectId": "PROJ_ETA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD8",
+      "projectId": "PROJ_THETA",
+      "updateDate": "2026-09-10",
+      "description": "Weekly delivery update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD9",
+      "projectId": "PROJ_ALPHA",
+      "updateDate": "2026-01-01",
+      "description": "Old status update",
+      "riskLevel": "low"
+    },
+    {
+      "id": "UPD10",
+      "projectId": "PROJ_ALPHA",
+      "updateDate": "2026-09-14",
+      "description": "Critical dependency discovered",
+      "riskLevel": "high"
+    },
+    {
+      "id": "UPD11",
+      "projectId": "PROJ_BETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD12",
+      "projectId": "PROJ_GAMMA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD13",
+      "projectId": "PROJ_DELTA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD14",
+      "projectId": "PROJ_EPSILON",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD15",
+      "projectId": "PROJ_ZETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD16",
+      "projectId": "PROJ_ETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD17",
+      "projectId": "PROJ_THETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD18",
+      "projectId": "PROJ_ALPHA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD19",
+      "projectId": "PROJ_BETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD20",
+      "projectId": "PROJ_GAMMA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD21",
+      "projectId": "PROJ_DELTA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD22",
+      "projectId": "PROJ_EPSILON",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD23",
+      "projectId": "PROJ_ZETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
+    },
+    {
+      "id": "UPD24",
+      "projectId": "PROJ_ETA",
+      "updateDate": "2026-09-01",
+      "description": "Additional delivery observation",
+      "riskLevel": "medium"
     }
   ]
 }

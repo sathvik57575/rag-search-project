@@ -2,16 +2,15 @@ const axios = require('axios');
 const { toolDefinitions } = require('./tools');
 const toolImpl = require('./toolImpl');
 
-// const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'gemini-3.5-flash-lite';
-const DEFAULT_MODEL =  'llama3.2';
+const DEFAULT_MODEL = 'qwen3:4b';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434/api/chat';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const MAX_ITERATIONS = 8;
+const MAX_ITERATIONS = 15;
 
 const systemMessage = {
   role: 'system',
-  content: 'You are a goal-oriented project management agent. Decompose each user goal into the smallest useful set of tool calls, choose the next tool from the evidence available, evaluate tool results before deciding whether more evidence is needed, and stop when the goal is answered. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present in the conversation and never repeat an identical tool call unless the user explicitly asks to retry it. Use tools for project data; never invent records. Resolve ambiguous people or projects by asking the user to clarify. Mutating tools require confirmation from the application; if a tool reports confirmation_required, explain the proposed change and stop. Prefer evidence-backed recommendations that identify the affected project, cause, and action.'
+  content: 'You are a goal-oriented project management agent. Understand the objective, create a dynamic plan with dependencies before a multi-project investigation, and choose the next tool from the evidence available. Evaluate every result before deciding whether more evidence is needed. If a tool fails, data is missing or invalid, or evidence conflicts, call replan with revised dependency-aware steps or stop with an explicit insufficiency. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present and never repeat an identical tool call unless retrying is necessary after a failure. Use tools for project data; never invent records. For risk reports, inspect active projects, use metrics, risk, and update evidence as needed, prioritize by severity, and recommend actions grounded in returned evidence. Resolve ambiguity by asking the user to clarify. Mutations require confirmation from the application.'
 };
 
 async function askModel(messages, model) {
@@ -24,6 +23,11 @@ async function askModel(messages, model) {
   const message = response.data && response.data.message;
   if (!message) throw new Error('Ollama returned no message');
   return message;
+}
+
+async function askConfiguredModel(messages, model) {
+  if (String(model).toLowerCase().includes('gemini')) return askModel1(messages, model);
+  return askModel(messages, model);
 }
 
 function toGeminiSchema(schema) {
@@ -164,9 +168,24 @@ async function runAgent(userMessage, options = {}) {
   const callCache = new Map();
   const failures = [];
   const mutatingTools = new Set(['update_task_status', 'assign_task']);
+  const executionTrace = [];
 
   for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration += 1) {
-    const assistantMessage = await askModel(messages, model);
+    let assistantMessage;
+    try {
+      assistantMessage = await askConfiguredModel(messages, model);
+    } catch (error) {
+      failures.push({ iteration, stage: 'model', error: error.message });
+      return {
+        finalAnswer: 'I could not continue because the local model failed. No risk conclusion was generated from incomplete evidence.',
+        model,
+        iterations: iteration,
+        stopped: 'model_error',
+        log,
+        executionTrace,
+        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
+      };
+    }
     // const assistantMessage = await askModel1(messages, model);
     messages.push(assistantMessage);
     const calls = assistantMessage.tool_calls || [];
@@ -177,16 +196,27 @@ async function runAgent(userMessage, options = {}) {
         model,
         iterations: iteration,
         log,
-        state: { failures, recommendations: context.recommendations }
+        executionTrace,
+        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
       };
     }
 
     for (const call of calls) {
       const toolName = call.function && call.function.name;
       const argumentsValue = call.function && call.function.arguments;
-      const argumentsObject = parseArguments(argumentsValue);
+      let argumentsObject;
+      let argumentParsingError;
+      try {
+        argumentsObject = parseArguments(argumentsValue);
+      } catch (error) {
+        argumentsObject = {};
+        argumentParsingError = error;
+        failures.push({ iteration, tool: toolName, error: `Invalid tool arguments: ${error.message}` });
+      }
       const cacheKey = `${toolName}:${JSON.stringify(argumentsObject, Object.keys(argumentsObject).sort())}`;
       let result;
+
+      if (argumentParsingError) result = { error: `Invalid tool arguments: ${argumentParsingError.message}` };
 
       const argumentError = validateToolArguments(toolName, argumentsObject);
       if (argumentError) {
@@ -228,6 +258,7 @@ async function runAgent(userMessage, options = {}) {
       }
 
       log.push({ iteration, tool: toolName, arguments: argumentsObject, result });
+      executionTrace.push({ iteration, tool: toolName, arguments: argumentsObject, outcome: result && result.error ? 'failed' : 'completed', observed: result });
       messages.push({
         role: 'tool',
         tool_name: toolName,
@@ -242,7 +273,8 @@ async function runAgent(userMessage, options = {}) {
     iterations: MAX_ITERATIONS,
     stopped: 'max_iterations',
     log,
-    state: { failures, recommendations: context.recommendations }
+    executionTrace,
+    state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
   };
 }
 

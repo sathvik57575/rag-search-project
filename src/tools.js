@@ -2,6 +2,38 @@ const toolDefinitions = [
   {
     type: 'function',
     function: {
+      name: 'create_plan',
+      description: 'Create a dynamic plan for the current goal. Include ordered steps, dependencies, and the information each step must produce. Use this before a multi-project investigation.',
+      parameters: {
+        type: 'object',
+        properties: {
+          objective: { type: 'string' },
+          steps: { type: 'array', items: { type: 'object' } }
+        },
+        required: ['objective', 'steps'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'replan',
+      description: 'Revise the current plan after a tool failure, missing data, invalid data, or conflicting evidence. Explain the blocked step and the replacement steps.',
+      parameters: {
+        type: 'object',
+        properties: {
+          reason: { type: 'string' },
+          steps: { type: 'array', items: { type: 'object' } }
+        },
+        required: ['reason', 'steps'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_employee',
       description: 'Find an employee by exact ID or partial name, or list all employees when no ID or name is provided. Return ambiguous matches instead of guessing when multiple employees match.',
       parameters: {
@@ -87,6 +119,31 @@ const toolDefinitions = [
         type: 'object',
         properties: { projectId: { type: 'string' } },
         required: ['projectId'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_project_metrics',
+      description: 'Calculate deterministic delivery metrics for one project, including task counts, overdue work, completion, and deadline status.',
+      parameters: {
+        type: 'object',
+        properties: { projectId: { type: 'string' } },
+        required: ['projectId'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_project_updates',
+      description: 'List updates for a project or all projects. Use update dates and risk levels as evidence, and report stale or conflicting updates rather than choosing silently.',
+      parameters: {
+        type: 'object',
+        properties: { projectId: { type: 'string' }, riskLevel: { type: 'string' } },
         additionalProperties: false
       }
     }
