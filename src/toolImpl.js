@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const memory = require('./memory');
 
 const dataPath =
   process.env.PM_DATA_PATH ||
@@ -138,6 +139,7 @@ function createContext(options = {}) {
     plan: null,
     planHistory: [],
     persist: options.persist === true,
+    memorySession: options.memorySession || null,
   };
 }
 
@@ -608,6 +610,31 @@ function create_recommendation(
   return { created: true, recommendation };
 }
 
+function remember({ key, content, type, tags } = {}, context) {
+  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  return memory.remember({
+    userId: context.memorySession.userId,
+    key,
+    content,
+    type,
+    tags,
+  }, context.memorySession);
+}
+
+function forget({ key } = {}, context) {
+  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  return memory.forget({ userId: context.memorySession.userId, key }, context.memorySession);
+}
+
+function search_memory({ query, limit } = {}, context) {
+  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  return memory.search({
+    userId: context.memorySession.userId,
+    query,
+    limit,
+  }, context.memorySession);
+}
+
 module.exports = {
   createContext,
   get_employee,
@@ -625,4 +652,7 @@ module.exports = {
   get_project_updates,
   create_plan,
   replan,
+  remember,
+  forget,
+  search_memory,
 };

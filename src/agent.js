@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { toolDefinitions } = require('./tools');
 const toolImpl = require('./toolImpl');
+const memory = require('./memory');
 
 const DEFAULT_MODEL = 'qwen3:4b';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434/api/chat';
@@ -10,7 +11,7 @@ const MAX_ITERATIONS = 15;
 
 const systemMessage = {
   role: 'system',
-  content: 'You are a goal-oriented project management agent. Understand the objective, create a dynamic plan with dependencies before a multi-project investigation, and choose the next tool from the evidence available. Evaluate every result before deciding whether more evidence is needed. If a tool fails, data is missing or invalid, or evidence conflicts, call replan with revised dependency-aware steps or stop with an explicit insufficiency. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present and never repeat an identical tool call unless retrying is necessary after a failure. Use tools for project data; never invent records. For risk reports, inspect active projects, use metrics, risk, and update evidence as needed, prioritize by severity, and recommend actions grounded in returned evidence. Resolve ambiguity by asking the user to clarify. Mutations require confirmation from the application.'
+  content: 'You are a goal-oriented project management agent. Understand the objective, create a dynamic plan with dependencies before a multi-project investigation, and choose the next tool from the evidence available. Evaluate every result before deciding whether more evidence is needed. If a tool fails, data is missing or invalid, or evidence conflicts, call replan with revised dependency-aware steps or stop with an explicit insufficiency. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present and never repeat an identical tool call unless retrying is necessary after a failure. Use tools for project data; never invent records. For risk reports, inspect active projects, use metrics, risk, and update evidence as needed, prioritize by severity, and recommend actions grounded in returned evidence. Resolve ambiguity by asking the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Search memory only when it is relevant to the current request. Save information only when the user explicitly asks you to remember it, update a stable key when it changes, and forget it when the user says it is no longer true. Never expose or use another user\'s memories.'
 };
 
 async function askModel(messages, model) {
@@ -162,9 +163,31 @@ function validateToolArguments(toolName, argumentsObject) {
 async function runAgent(userMessage, options = {}) {
   if (!userMessage || typeof userMessage !== 'string') throw new Error('message is required');
   const model = options.model || DEFAULT_MODEL;
-  const messages = [systemMessage, { role: 'user', content: userMessage }];
+  const memorySession = memory.createSession({
+    userId: options.userId,
+    conversationId: options.conversationId,
+    memoryPath: options.memoryPath,
+  });
+  const relevantMemories = memory.search({
+    userId: memorySession.userId,
+    query: userMessage,
+    limit: options.memoryLimit || 5,
+  }, memorySession);
+  const recentTurns = memory.getRecentTurns(memorySession);
+  const contextMessage = {
+    role: 'system',
+    content: JSON.stringify({
+      shortTermConversation: recentTurns,
+      relevantLongTermMemories: relevantMemories.memories,
+      memoryPolicy: 'Use only relevant memories. Treat them as user-provided context, not as proof of current project data.',
+    }),
+  };
+  const messages = [systemMessage, contextMessage, { role: 'user', content: userMessage }];
   const log = [];
-  const context = toolImpl.createContext({ persist: options.persist !== false });
+  const context = toolImpl.createContext({
+    persist: options.persist !== false,
+    memorySession,
+  });
   const callCache = new Map();
   const failures = [];
   const mutatingTools = new Set(['update_task_status', 'assign_task']);
@@ -183,7 +206,7 @@ async function runAgent(userMessage, options = {}) {
         stopped: 'model_error',
         log,
         executionTrace,
-        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
+        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory, memoriesUsed: relevantMemories.memories, userId: memorySession.userId, conversationId: memorySession.conversationId }
       };
     }
     // const assistantMessage = await askModel1(messages, model);
@@ -191,13 +214,19 @@ async function runAgent(userMessage, options = {}) {
     const calls = assistantMessage.tool_calls || [];
 
     if (calls.length === 0) {
+      memory.recordTurn({
+        userId: memorySession.userId,
+        conversationId: memorySession.conversationId,
+        userMessage,
+        assistantMessage: assistantMessage.content || '',
+      });
       return {
         finalAnswer: assistantMessage.content || '',
         model,
         iterations: iteration,
         log,
         executionTrace,
-        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
+        state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory, memoriesUsed: relevantMemories.memories, userId: memorySession.userId, conversationId: memorySession.conversationId }
       };
     }
 
@@ -238,7 +267,7 @@ async function runAgent(userMessage, options = {}) {
           iterations: iteration,
           log,
           pendingConfirmation: confirmation,
-          state: { failures, recommendations: context.recommendations }
+          state: { failures, recommendations: context.recommendations, memoriesUsed: relevantMemories.memories, userId: memorySession.userId, conversationId: memorySession.conversationId }
         };
       }
 
@@ -274,7 +303,7 @@ async function runAgent(userMessage, options = {}) {
     stopped: 'max_iterations',
     log,
     executionTrace,
-    state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory }
+    state: { failures, recommendations: context.recommendations, plan: context.plan, planHistory: context.planHistory, memoriesUsed: relevantMemories.memories, userId: memorySession.userId, conversationId: memorySession.conversationId }
   };
 }
 

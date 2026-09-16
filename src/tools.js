@@ -213,6 +213,50 @@ const toolDefinitions = [
         additionalProperties: false
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'remember',
+      description: 'Save durable user information only when the user explicitly asks you to remember it, such as a preference or an important standing fact. Use a stable key so a later statement can update it.',
+      parameters: {
+        type: 'object',
+        properties: {
+          key: { type: 'string', description: 'Stable memory key, for example priority' },
+          content: { type: 'string', description: 'The information to remember' },
+          type: { type: 'string', description: 'preference, fact, or instruction' },
+          tags: { type: 'array', items: { type: 'string' } }
+        },
+        required: ['key', 'content'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'forget',
+      description: 'Remove a previously stored memory when the user explicitly says it is no longer true or asks you to forget it.',
+      parameters: {
+        type: 'object',
+        properties: { key: { type: 'string' } },
+        required: ['key'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_memory',
+      description: 'Retrieve relevant stored memories for the current request. Do not retrieve or mention memories that are unrelated to the user request.',
+      parameters: {
+        type: 'object',
+        properties: { query: { type: 'string' }, limit: { type: 'number' } },
+        required: ['query'],
+        additionalProperties: false
+      }
+    }
   }
 ];
 

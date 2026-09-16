@@ -13,6 +13,18 @@ This project demonstrates a goal-oriented project-management agent using local O
 Invoke-RestMethod http://localhost:3000/agent -Method Post -ContentType 'application/json' -Body '{"message":"Who is responsible for the overdue tasks in Project Alpha?"}'
 ```
 
+Supply `userId` to isolate long-term memory and `conversationId` to keep short-term context between turns:
+
+```json
+{
+	"userId": "alice",
+	"conversationId": "planning",
+	"message": "Remember that Project Alpha is my priority."
+}
+```
+
+The agent stores explicit memories in `data/memory.json`, keyed by user. A later request such as `What should I focus on today?` retrieves only relevant memories for that user. Reusing a memory key updates it, and `Project Alpha is no longer my priority` allows the agent to remove or replace the old preference through the memory tools. Recent turns are held in bounded in-memory conversation state; they are not promoted to long-term memory automatically. Set `MEMORY_PATH` to use another JSON file.
+
 The default model is `qwen3:4b`. Choose a model per request with the optional `model` field:
 
 ```json
@@ -30,13 +42,13 @@ Optional environment variables are `OLLAMA_URL` and `PORT`. Configure `GEMINI_AP
 
 `POST /agent` sends the user goal and all tool schemas to Ollama. The model can create a plan, choose the next function from observed evidence, revise the plan after failures or conflicting data, and stop when it has enough evidence or cannot continue. The response includes `state.plan`, `state.planHistory`, `executionTrace`, failures, and recommendations.
 
-Available tools include `create_plan`, `replan`, `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `get_project_metrics`, `get_project_updates`, `find_project_risks`, `update_task_status`, `assign_task`, and `create_recommendation`.
+Available tools include `create_plan`, `replan`, `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `get_project_metrics`, `get_project_updates`, `find_project_risks`, `update_task_status`, `assign_task`, `create_recommendation`, `remember`, `forget`, and `search_memory`.
 
 Each request gets an isolated context containing tool results, failures, and recommendations. Repeated identical calls are served from the request cache. Status and assignment changes stop with `pendingConfirmation`; repeat the request with `"confirmed": true` to authorize the mutation.
 
 ## Test the data tools
 
-Run `npm run test:tools` and `npm run test:planning`. These checks cover duplicate-name ambiguity, overdue filtering, missing projects, plan revision, no-task projects, stale/conflicting updates, and invalid data without requiring Ollama.
+Run `npm test` to cover the data tools, agent flow, planning/risk behavior, and memory isolation without requiring Ollama.
 
 The default seed expands to 24 employees, 9 projects, 105 tasks, and 24 updates. It includes overdue and blocked work, a project with no tasks, malformed task data, stale updates, and conflicting update risk levels. Custom `PM_DATA_PATH` fixtures are not expanded, so API/tool failure scenarios remain easy to test.
 
