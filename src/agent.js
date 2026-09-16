@@ -214,7 +214,7 @@ function rememberPreference(userMessage, memorySession) {
 }
 
 function answerMemoryQuestion(userMessage, memorySession) {
-  if (!/\b(what|which)\b.*\b(?:want|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage)) {
+  if (!/\b(what|which)\b.*\b(?:want|wanna|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage)) {
     return null;
   }
   const result = memory.search({ userId: memorySession.userId, query: 'focus priority remember' }, memorySession);

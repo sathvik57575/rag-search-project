@@ -73,6 +73,12 @@ async function testRememberPreferenceAndIsolation() {
   });
   assert(otherMemory.finalAnswer.includes('do not have a saved preference'));
   assert.strictEqual(memory.search({ userId: 'another-user', query: 'Project Alpha' }, { memoryPath }).count, 0);
+  const wannaMemory = await runAgent('what project do I wanna focus on today', {
+    userId: 'different-user',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(wannaMemory.finalAnswer.includes('do not have a saved preference'));
 }
 
 async function run() {
