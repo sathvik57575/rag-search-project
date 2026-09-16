@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 const memory = require('../src/memory');
 const tools = require('../src/toolImpl');
+const { runAgent } = require('../src/agent');
 
 const memoryPath = path.join(os.tmpdir(), `project-agent-memory-${process.pid}.json`);
 
@@ -39,14 +40,29 @@ function testShortTermConversationIsolation() {
   assert.strictEqual(memory.getRecentTurns({ userId: 'alice', conversationId: 'other' }).length, 0);
 }
 
-try {
+async function testRememberProjectsIntent() {
+  cleanMemory();
+  const result = await runAgent('remember all the projects Priya owns', {
+    userId: 'naresh',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(result.finalAnswer.includes('Project Alpha'));
+  assert.strictEqual(result.log[0].tool, 'remember');
+  assert.strictEqual(memory.search({ userId: 'naresh', query: 'Priya projects' }, { memoryPath }).count, 1);
+}
+
+async function run() {
   testSaveUpdateForgetAndIsolation();
   testMemoryToolsUseUserSession();
   testShortTermConversationIsolation();
+  await testRememberProjectsIntent();
   cleanMemory();
   console.log('memory checks passed');
-} catch (error) {
+}
+
+run().catch((error) => {
   cleanMemory();
   console.error(error);
   process.exitCode = 1;
-}
+});

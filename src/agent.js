@@ -160,6 +160,37 @@ function validateToolArguments(toolName, argumentsObject) {
   return null;
 }
 
+function extractRememberProjectsRequest(userMessage) {
+  const match = userMessage.match(/\bremember\s+(?:all\s+)?(?:the\s+)?projects?\s+(.+?)\s+owns\b/i);
+  return match ? match[1].trim() : null;
+}
+
+function rememberProjectsOwnedBy(userMessage, memorySession) {
+  const ownerName = extractRememberProjectsRequest(userMessage);
+  if (!ownerName) return null;
+
+  const context = toolImpl.createContext({ memorySession, persist: false });
+  const employee = toolImpl.get_employee({ name: ownerName }, context);
+  if (employee.error || employee.ambiguous) return { ownerName, employee };
+
+  const projectsResult = toolImpl.get_projects({ ownerId: employee.id }, context);
+  if (projectsResult.error) return { ownerName, employee, projectsResult };
+
+  const projectNames = projectsResult.projects.map((project) => project.name);
+  const content = projectNames.length
+    ? `${employee.name} owns: ${projectNames.join(', ')}.`
+    : `${employee.name} owns no projects.`;
+  const saved = memory.remember({
+    userId: memorySession.userId,
+    key: `${employee.name.toLowerCase()} projects`,
+    content,
+    type: 'fact',
+    tags: ['projects', 'ownership', employee.name],
+  }, memorySession);
+
+  return { ownerName, employee, projectsResult, saved };
+}
+
 async function runAgent(userMessage, options = {}) {
   if (!userMessage || typeof userMessage !== 'string') throw new Error('message is required');
   const model = options.model || DEFAULT_MODEL;
@@ -168,6 +199,29 @@ async function runAgent(userMessage, options = {}) {
     conversationId: options.conversationId,
     memoryPath: options.memoryPath,
   });
+  const directMemoryResult = rememberProjectsOwnedBy(userMessage, memorySession);
+  if (directMemoryResult && directMemoryResult.saved) {
+    const projects = directMemoryResult.projectsResult.projects;
+    const projectSummary = projects.length
+      ? projects.map((project) => project.name).join(', ')
+      : 'no projects';
+    return {
+      finalAnswer: `${directMemoryResult.employee.name} owns ${projectSummary}. I saved this information to your memory.`,
+      model,
+      iterations: 0,
+      log: [{ tool: 'remember', arguments: { key: `${directMemoryResult.employee.name.toLowerCase()} projects` }, result: directMemoryResult.saved }],
+      executionTrace: [{ tool: 'remember', outcome: 'completed', observed: directMemoryResult.saved }],
+      state: {
+        failures: [],
+        recommendations: [],
+        plan: null,
+        planHistory: [],
+        memoriesUsed: [],
+        userId: memorySession.userId,
+        conversationId: memorySession.conversationId,
+      },
+    };
+  }
   const relevantMemories = memory.search({
     userId: memorySession.userId,
     query: userMessage,
