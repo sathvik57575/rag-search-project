@@ -1,3 +1,30 @@
 {
-  "users": {}
+  "users": {
+    "sathvik": {
+      "memories": [
+        {
+          "id": "MEM_1789628050995_1",
+          "key": "focus",
+          "content": "Project I want to focus on is project delta.",
+          "type": "preference",
+          "tags": [],
+          "updatedAt": "2026-09-17T06:59:12.040Z"
+        }
+      ]
+    },
+    "suresh": {
+      "memories": [
+        {
+          "id": "MEM_1789632475229_1",
+          "key": "preference",
+          "content": "The task I want to do today is updating upd4 to risk level high.",
+          "type": "preference",
+          "tags": [
+            "user-preference"
+          ],
+          "updatedAt": "2026-09-17T08:07:55.229Z"
+        }
+      ]
+    }
+  }
 }

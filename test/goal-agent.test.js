@@ -95,6 +95,25 @@ async function testMutationConfirmation() {
   assert.strictEqual(confirmed.log[0].result.previousStatus, 'in_progress');
 }
 
+async function testProjectUpdateRiskMutation() {
+  const responses = [
+    functionResponse('get_project_updates', {}, 'sig-1'),
+    functionResponse('update_project_update_risk', { updateId: 'UPD4', riskLevel: 'high', reason: 'User requested update' }, 'sig-2')
+  ];
+  const pending = await withGeminiResponses(responses, () => runAgent('Update project update UPD4 to risk level high.', { model: 'gemini-3.5-flash-lite' }));
+  assert(pending.pendingConfirmation);
+  assert.strictEqual(pending.pendingConfirmation.action, 'update_project_update_risk');
+  assert.strictEqual(pending.log[1].result.confirmation_required, true);
+
+  const confirmedResponses = [
+    functionResponse('update_project_update_risk', { updateId: 'UPD4', riskLevel: 'high', reason: 'User requested update' }, 'sig-1'),
+    textResponse('UPD4 was updated to high risk.')
+  ];
+  const confirmed = await withGeminiResponses(confirmedResponses, () => runAgent('Update project update UPD4 to risk level high.', { model: 'gemini-3.5-flash-lite', confirmed: true, persist: false }));
+  assert.strictEqual(confirmed.log[0].result.updated, true);
+  assert.strictEqual(confirmed.log[0].result.previousRiskLevel, 'low');
+}
+
 async function testAmbiguousInput() {
   const responses = [
     functionResponse('get_employee', { name: 'John' }, 'sig-1'),
@@ -136,6 +155,7 @@ function testToolContextIsolationAndConflictingData() {
   await testComplexGoal();
   await testFailureRecoveryAndDuplicateAvoidance();
   await testMutationConfirmation();
+  await testProjectUpdateRiskMutation();
   await testAmbiguousInput();
   await testInvalidMutationRecovery();
   testToolContextIsolationAndConflictingData();

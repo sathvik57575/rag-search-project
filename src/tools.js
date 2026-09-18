@@ -198,6 +198,23 @@ const toolDefinitions = [
   {
     type: 'function',
     function: {
+      name: 'update_project_update_risk',
+      description: 'Change the risk level of an existing project update. This is an impactful action and requires user confirmation. Resolve the exact update ID before calling this tool.',
+      parameters: {
+        type: 'object',
+        properties: {
+          updateId: { type: 'string', description: 'Project update ID, for example UPD4' },
+          riskLevel: { type: 'string', description: 'low, medium, or high' },
+          reason: { type: 'string' }
+        },
+        required: ['updateId', 'riskLevel'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'create_recommendation',
       description: 'Create a structured project-management recommendation or proposed action from evidence gathered during the goal. This does not change task data and is safe to execute.',
       parameters: {

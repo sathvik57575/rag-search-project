@@ -605,6 +605,33 @@ function assign_task({ taskId, assigneeId, reason } = {}, context) {
   };
 }
 
+function update_project_update_risk({ updateId, riskLevel, reason } = {}, context) {
+  const contextData = getContextData(context);
+  const update = findById(contextData.project_updates || contextData.projectUpdates || [], updateId || "");
+  const allowedRiskLevels = ["low", "medium", "high"];
+  if (!update) return { error: `Project update '${updateId || ""}' was not found` };
+  if (!allowedRiskLevels.includes(String(riskLevel || "").toLowerCase())) {
+    return {
+      error: `Invalid risk level '${riskLevel}'. Use low, medium, or high.`,
+    };
+  }
+  const previousRiskLevel = update.riskLevel;
+  update.riskLevel = String(riskLevel).toLowerCase();
+  try {
+    persistContext(context);
+  } catch (error) {
+    update.riskLevel = previousRiskLevel;
+    return { error: `Project update risk level was not persisted: ${error.message}` };
+  }
+  return {
+    updated: true,
+    persisted: Boolean(context && context.persist),
+    update,
+    previousRiskLevel,
+    reason: reason || null,
+  };
+}
+
 function create_recommendation(
   { projectId, title, rationale, action, priority } = {},
   context,
@@ -623,7 +650,7 @@ function create_recommendation(
 }
 
 function remember({ key, content, type, tags } = {}, context) {
-  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  if (!context || !context.memorySession || !context.memorySession.hasUserId) return { error: 'Memory is unavailable without a user session.' };
   return memory.remember({
     userId: context.memorySession.userId,
     key,
@@ -634,12 +661,12 @@ function remember({ key, content, type, tags } = {}, context) {
 }
 
 function forget({ key } = {}, context) {
-  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  if (!context || !context.memorySession || !context.memorySession.hasUserId) return { error: 'Memory is unavailable without a user session.' };
   return memory.forget({ userId: context.memorySession.userId, key }, context.memorySession);
 }
 
 function search_memory({ query, limit } = {}, context) {
-  if (!context || !context.memorySession) return { error: 'Memory is unavailable without a user session.' };
+  if (!context || !context.memorySession || !context.memorySession.hasUserId) return { error: 'Memory is unavailable without a user session.' };
   return memory.search({
     userId: context.memorySession.userId,
     query,
@@ -658,6 +685,7 @@ module.exports = {
   find_project_risks,
   update_task_status,
   assign_task,
+  update_project_update_risk,
   create_recommendation,
   get_employee_by_query,
   get_project_metrics,

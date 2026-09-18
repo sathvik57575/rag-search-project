@@ -157,6 +157,15 @@ function validateToolArguments(toolName, argumentsObject) {
     }
   }
 
+  if (toolName === 'update_project_update_risk') {
+    if (!/^UPD[0-9]+$/i.test(String(argumentsObject.updateId || ''))) {
+      return { error: `Invalid updateId '${argumentsObject.updateId || ''}'. Resolve and use a real project update ID.` };
+    }
+    if (!['low', 'medium', 'high'].includes(String(argumentsObject.riskLevel || '').toLowerCase())) {
+      return { error: `Invalid risk level '${argumentsObject.riskLevel || ''}'. Use low, medium, or high.` };
+    }
+  }
+
   return null;
 }
 
@@ -192,7 +201,8 @@ function rememberProjectsOwnedBy(userMessage, memorySession) {
 }
 
 function extractRememberPreference(userMessage) {
-  const match = userMessage.match(/\bremember\s+that\s+(?:i\s+)?(.+)$/i);
+  const match = userMessage.match(/\bremember\s+that\s+(?:i\s+)?(.+)$/i)
+    || userMessage.match(/\bremember\s+(?:the|my|this|i)\s+(.+)$/i);
   return match ? match[1].trim().replace(/[.?!]+$/, '') : null;
 }
 
@@ -214,10 +224,17 @@ function rememberPreference(userMessage, memorySession) {
 }
 
 function answerMemoryQuestion(userMessage, memorySession) {
-  if (!/\b(what|which)\b.*\b(?:want|wanna|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage)) {
+  const asksWhatWasRemembered = /\bwhat\b.*\b(?:did\s+i\s+ask|have\s+i\s+asked|(?:i\s+)?(?:ask|asked))\b.*\bremem(?:ber|eber)\b/i.test(userMessage);
+  const asksPreference = /\b(what|which)\b.*\b(?:want|wanna|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage);
+  if (!asksWhatWasRemembered && !asksPreference) {
     return null;
   }
-  const result = memory.search({ userId: memorySession.userId, query: 'focus priority remember' }, memorySession);
+  const result = asksWhatWasRemembered
+    ? memory.list({ userId: memorySession.userId }, memorySession)
+    : memory.search({
+      userId: memorySession.userId,
+      query: `${userMessage} focus priority project`,
+    }, memorySession);
   if (!result.memories.length) {
     return {
       finalAnswer: 'I do not have a saved preference for you yet.',
@@ -238,7 +255,8 @@ async function runAgent(userMessage, options = {}) {
     conversationId: options.conversationId,
     memoryPath: options.memoryPath,
   });
-  const directMemoryResult = rememberProjectsOwnedBy(userMessage, memorySession);
+  const hasUserSession = memorySession.hasUserId;
+  const directMemoryResult = hasUserSession ? rememberProjectsOwnedBy(userMessage, memorySession) : null;
   if (directMemoryResult && directMemoryResult.saved) {
     const projects = directMemoryResult.projectsResult.projects;
     const projectSummary = projects.length
@@ -261,7 +279,7 @@ async function runAgent(userMessage, options = {}) {
       },
     };
   }
-  const preferenceResult = rememberPreference(userMessage, memorySession);
+  const preferenceResult = hasUserSession ? rememberPreference(userMessage, memorySession) : null;
   if (preferenceResult && preferenceResult.saved) {
     return {
       finalAnswer: 'I saved that preference to your memory.',
@@ -280,7 +298,7 @@ async function runAgent(userMessage, options = {}) {
       },
     };
   }
-  const directMemoryAnswer = answerMemoryQuestion(userMessage, memorySession);
+  const directMemoryAnswer = hasUserSession ? answerMemoryQuestion(userMessage, memorySession) : null;
   if (directMemoryAnswer) {
     return {
       finalAnswer: directMemoryAnswer.finalAnswer,
@@ -299,12 +317,14 @@ async function runAgent(userMessage, options = {}) {
       },
     };
   }
-  const relevantMemories = memory.search({
-    userId: memorySession.userId,
-    query: userMessage,
-    limit: options.memoryLimit || 5,
-  }, memorySession);
-  const recentTurns = memory.getRecentTurns(memorySession);
+  const relevantMemories = hasUserSession
+    ? memory.search({
+      userId: memorySession.userId,
+      query: userMessage,
+      limit: options.memoryLimit || 5,
+    }, memorySession)
+    : { count: 0, memories: [] };
+  const recentTurns = hasUserSession ? memory.getRecentTurns(memorySession) : [];
   const contextMessage = {
     role: 'system',
     content: JSON.stringify({
@@ -321,7 +341,7 @@ async function runAgent(userMessage, options = {}) {
   });
   const callCache = new Map();
   const failures = [];
-  const mutatingTools = new Set(['update_task_status', 'assign_task']);
+  const mutatingTools = new Set(['update_task_status', 'assign_task', 'update_project_update_risk']);
   const executionTrace = [];
 
   for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration += 1) {
@@ -345,12 +365,14 @@ async function runAgent(userMessage, options = {}) {
     const calls = assistantMessage.tool_calls || [];
 
     if (calls.length === 0) {
-      memory.recordTurn({
-        userId: memorySession.userId,
-        conversationId: memorySession.conversationId,
-        userMessage,
-        assistantMessage: assistantMessage.content || '',
-      });
+      if (hasUserSession) {
+        memory.recordTurn({
+          userId: memorySession.userId,
+          conversationId: memorySession.conversationId,
+          userMessage,
+          assistantMessage: assistantMessage.content || '',
+        });
+      }
       return {
         finalAnswer: assistantMessage.content || '',
         model,

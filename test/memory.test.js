@@ -40,6 +40,14 @@ function testShortTermConversationIsolation() {
   assert.strictEqual(memory.getRecentTurns({ userId: 'alice', conversationId: 'other' }).length, 0);
 }
 
+function testAnonymousSessionHasNoMemoryIdentity() {
+  cleanMemory();
+  const session = memory.createSession({ memoryPath });
+  assert.strictEqual(session.hasUserId, false);
+  const context = tools.createContext({ memorySession: session });
+  assert.strictEqual(tools.search_memory({ query: 'emp2' }, context).error, 'Memory is unavailable without a user session.');
+}
+
 async function testRememberProjectsIntent() {
   cleanMemory();
   const result = await runAgent('remember all the projects Priya owns', {
@@ -81,12 +89,50 @@ async function testRememberPreferenceAndIsolation() {
   assert(wannaMemory.finalAnswer.includes('do not have a saved preference'));
 }
 
+async function testRememberProjectWording() {
+  cleanMemory();
+  const saved = await runAgent('remember the project I want to focus on is project alpha', {
+    userId: 'sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(saved.finalAnswer.includes('saved'));
+  const recalled = await runAgent('what is the project I want to remember today', {
+    userId: 'sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(recalled.finalAnswer.toLowerCase().includes('project alpha'));
+}
+
+async function testRecallAllRememberedInformationAfterRestart() {
+  cleanMemory();
+  const saved = await runAgent('remember that the task I want to do today is updating upd4 to risk level high', {
+    userId: 'suresh',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(saved.finalAnswer.includes('saved'));
+
+  memory.clearMemoryCache();
+  const recalled = await runAgent('what did I ask you to rememeber?', {
+    userId: 'suresh',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(recalled.finalAnswer.toLowerCase().includes('upd4'));
+  assert(recalled.finalAnswer.toLowerCase().includes('risk level high'));
+}
+
 async function run() {
   testSaveUpdateForgetAndIsolation();
   testMemoryToolsUseUserSession();
   testShortTermConversationIsolation();
+  testAnonymousSessionHasNoMemoryIdentity();
   await testRememberProjectsIntent();
   await testRememberPreferenceAndIsolation();
+  await testRememberProjectWording();
+  await testRecallAllRememberedInformationAfterRestart();
   cleanMemory();
   console.log('memory checks passed');
 }

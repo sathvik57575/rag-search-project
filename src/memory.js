@@ -93,6 +93,15 @@ function search({ userId, query, limit = 5 } = {}, options = {}) {
   return { count: matches.length, memories: matches };
 }
 
+function list({ userId, limit = 20 } = {}, options = {}) {
+  const store = readStore(options.memoryPath);
+  const memories = userMemories(store, userId)
+    .slice()
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    .slice(0, Math.max(1, Number(limit) || 20));
+  return { count: memories.length, memories };
+}
+
 function conversationKey(userId, conversationId) {
   return `${normalizeUserId(userId)}::${conversationId || 'default'}`;
 }
@@ -113,6 +122,7 @@ function createSession({ userId, conversationId, memoryPath } = {}) {
   const normalizedUserId = normalizeUserId(userId);
   return {
     userId: normalizedUserId,
+    hasUserId: userId !== undefined && userId !== null && String(userId).trim() !== '',
     conversationId: conversationId || 'default',
     memoryPath: getMemoryPath(memoryPath),
     relevant: [],
@@ -127,6 +137,7 @@ module.exports = {
   remember,
   forget,
   search,
+  list,
   recordTurn,
   getRecentTurns,
   createSession,
