@@ -24,11 +24,18 @@ function writeStore(store, memoryPath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const temporaryPath = `${filePath}.tmp`;
   fs.writeFileSync(temporaryPath, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
-  fs.renameSync(temporaryPath, filePath);
+  try {
+    fs.renameSync(temporaryPath, filePath);
+  } catch (error) {
+    fs.writeFileSync(filePath, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
+    if (fs.existsSync(temporaryPath)) {
+      try { fs.unlinkSync(temporaryPath); } catch (_) {}
+    }
+  }
 }
 
 function normalizeUserId(userId) {
-  return String(userId || 'anonymous').trim() || 'anonymous';
+  return String(userId || 'anonymous').trim().toLowerCase() || 'anonymous';
 }
 
 function tokens(value) {
@@ -38,6 +45,34 @@ function tokens(value) {
       .split(/[^a-z0-9_]+/)
       .filter((token) => token.length > 2),
   );
+}
+
+function stem(word) {
+  let s = String(word || '').toLowerCase();
+  if (s.length <= 2) return s;
+  if (s.endsWith('ies') && s.length > 4) return s.slice(0, -3) + 'y';
+  if (s.endsWith('ed') && s.length > 4) return s.slice(0, -2);
+  if (s.endsWith('ing') && s.length > 5) return s.slice(0, -3);
+  if (s.endsWith('es') && s.length > 4) return s.slice(0, -2);
+  if (s.endsWith('s') && s.length > 3 && !s.endsWith('ss')) return s.slice(0, -1);
+  return s;
+}
+
+const GENERAL_MEMORY_WORDS = new Set([
+  'remember', 'rememeber', 'remembering', 'memory', 'memories',
+  'stored', 'saved', 'recall', 'history', 'context', 'wanted',
+  'asked', 'told', 'tell', 'know', 'preference', 'preferences',
+  'info', 'information', 'detail', 'details'
+]);
+
+function isGeneralMemoryQuery(query) {
+  const queryTokens = tokens(query);
+  for (const token of queryTokens) {
+    if (GENERAL_MEMORY_WORDS.has(token) || GENERAL_MEMORY_WORDS.has(stem(token))) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function userMemories(store, userId) {
@@ -80,17 +115,50 @@ function forget({ userId, key } = {}, options = {}) {
 function search({ userId, query, limit = 5 } = {}, options = {}) {
   const store = readStore(options.memoryPath);
   const memories = userMemories(store, userId);
+  if (!memories.length) {
+    return { count: 0, memories: [] };
+  }
+  if (!query || !query.trim()) {
+    return list({ userId, limit }, options);
+  }
+
   const queryTokens = tokens(query);
   const matches = memories
     .map((memory) => {
       const memoryTokens = tokens(`${memory.key} ${memory.content} ${memory.tags.join(' ')}`);
-      const score = [...queryTokens].filter((token) => memoryTokens.has(token)).length;
+      let score = 0;
+      for (const qToken of queryTokens) {
+        const qStem = stem(qToken);
+        for (const mToken of memoryTokens) {
+          const mStem = stem(mToken);
+          if (
+            qToken === mToken ||
+            qStem === mStem ||
+            (qStem.length >= 3 && mToken.startsWith(qStem)) ||
+            (mStem.length >= 3 && qToken.startsWith(mStem))
+          ) {
+            score += 1;
+            break;
+          }
+        }
+      }
       return { ...memory, relevance: score };
-    })
+    });
+
+  let relevantMatches = matches
     .filter((memory) => memory.relevance > 0)
-    .sort((left, right) => right.relevance - left.relevance || right.updatedAt.localeCompare(left.updatedAt))
-    .slice(0, Math.max(1, Number(limit) || 5));
-  return { count: matches.length, memories: matches };
+    .sort((left, right) => right.relevance - left.relevance || right.updatedAt.localeCompare(left.updatedAt));
+
+  if (relevantMatches.length === 0 || isGeneralMemoryQuery(query)) {
+    if (relevantMatches.length === 0) {
+      relevantMatches = memories
+        .slice()
+        .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+    }
+  }
+
+  const results = relevantMatches.slice(0, Math.max(1, Number(limit) || 5));
+  return { count: results.length, memories: results };
 }
 
 function list({ userId, limit = 20 } = {}, options = {}) {

@@ -124,6 +124,41 @@ async function testRecallAllRememberedInformationAfterRestart() {
   assert(recalled.finalAnswer.toLowerCase().includes('risk level high'));
 }
 
+async function testUserPostmanQueryAndCaseInsensitivity() {
+  cleanMemory();
+  const saved = await runAgent('remember that the project I want to focus on is project delta', {
+    userId: 'sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(saved.finalAnswer.includes('saved'));
+
+  memory.clearMemoryCache();
+  const recalled = await runAgent('what I wanted you to remember today', {
+    userId: 'Sathvik',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(recalled.finalAnswer.toLowerCase().includes('project delta'));
+}
+
+async function testRememberStatementWithNewUser() {
+  cleanMemory();
+  const saved = await runAgent('the project I want to remember today is project beta', {
+    userId: 'naresh',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(saved.finalAnswer.includes('saved'));
+
+  const recalled = await runAgent('what project do I want to remember today', {
+    userId: 'naresh',
+    memoryPath,
+    model: 'llama3.2',
+  });
+  assert(recalled.finalAnswer.toLowerCase().includes('project beta'));
+}
+
 async function run() {
   testSaveUpdateForgetAndIsolation();
   testMemoryToolsUseUserSession();
@@ -133,6 +168,8 @@ async function run() {
   await testRememberPreferenceAndIsolation();
   await testRememberProjectWording();
   await testRecallAllRememberedInformationAfterRestart();
+  await testUserPostmanQueryAndCaseInsensitivity();
+  await testRememberStatementWithNewUser();
   cleanMemory();
   console.log('memory checks passed');
 }

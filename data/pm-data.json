@@ -1291,7 +1291,7 @@
       "projectId": "PROJ_DELTA",
       "updateDate": "2026-09-10",
       "description": "Weekly delivery update",
-      "riskLevel": "high"
+      "riskLevel": "low"
     },
     {
       "id": "UPD5",

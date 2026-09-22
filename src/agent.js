@@ -11,7 +11,7 @@ const MAX_ITERATIONS = 15;
 
 const systemMessage = {
   role: 'system',
-  content: 'You are a goal-oriented project management agent. Understand the objective, create a dynamic plan with dependencies before a multi-project investigation, and choose the next tool from the evidence available. Evaluate every result before deciding whether more evidence is needed. If a tool fails, data is missing or invalid, or evidence conflicts, call replan with revised dependency-aware steps or stop with an explicit insufficiency. Do not follow a fixed workflow or call tools just to fill a sequence. Reuse results already present and never repeat an identical tool call unless retrying is necessary after a failure. Use tools for project data; never invent records. For risk reports, inspect active projects, use metrics, risk, and update evidence as needed, prioritize by severity, and recommend actions grounded in returned evidence. Resolve ambiguity by asking the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Search memory only when it is relevant to the current request. Save information only when the user explicitly asks you to remember it, update a stable key when it changes, and forget it when the user says it is no longer true. Never expose or use another user\'s memories.'
+  content: 'You are a goal-oriented project management agent. For any query about projects, employees, tasks, metrics, or ownership, ALWAYS call the appropriate tool (such as get_project, get_projects, get_employee, get_tasks) to inspect system data before answering or asking for clarification. Do not invent project records or assume data is missing without querying the tools first. Create a dynamic plan for multi-project investigations. Evaluate every tool result. If a tool returns an error or ambiguous results, refine the query or ask the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Save information only when the user explicitly asks to remember it.'
 };
 
 async function askModel(messages, model) {
@@ -202,7 +202,11 @@ function rememberProjectsOwnedBy(userMessage, memorySession) {
 
 function extractRememberPreference(userMessage) {
   const match = userMessage.match(/\bremember\s+that\s+(?:i\s+)?(.+)$/i)
-    || userMessage.match(/\bremember\s+(?:the|my|this|i)\s+(.+)$/i);
+    || userMessage.match(/\bremember\s+(?:the|my|this|i)\s+(.+)$/i)
+    || userMessage.match(/^(?:the\s+)?(?:project\s+)?(?:i\s+)?want\s+(?:you\s+)?to\s+remember\s+(?:today\s+)?is\s+(.+)$/i)
+    || userMessage.match(/^(?:the\s+)?project\s+i\s+want\s+to\s+remember\s+(?:today\s+)?is\s+(.+)$/i)
+    || userMessage.match(/^(?:the\s+)?project\s+i\s+want\s+to\s+focus\s+on\s+(?:today\s+)?is\s+(.+)$/i)
+    || userMessage.match(/\bmy\s+(?:focus|preference|priority)\s+is\s+(.+)$/i);
   return match ? match[1].trim().replace(/[.?!]+$/, '') : null;
 }
 
@@ -224,17 +228,29 @@ function rememberPreference(userMessage, memorySession) {
 }
 
 function answerMemoryQuestion(userMessage, memorySession) {
-  const asksWhatWasRemembered = /\bwhat\b.*\b(?:did\s+i\s+ask|have\s+i\s+asked|(?:i\s+)?(?:ask|asked))\b.*\bremem(?:ber|eber)\b/i.test(userMessage);
-  const asksPreference = /\b(what|which)\b.*\b(?:want|wanna|need)\b.*\b(?:remember|focus|priority)\b/i.test(userMessage);
+  const isQuestion = /^\s*(?:what|which|tell|show|do|list)\b/i.test(userMessage) || /\?$/i.test(userMessage);
+
+  const isStatementToRemember = !isQuestion && (
+    /^(?:the\s+)?(?:project|task|item)?.*?\bwant\b.*?\bremember\b.*?\bis\b/i.test(userMessage)
+    || /^\s*remember\b/i.test(userMessage)
+    || /^(?:the\s+)?project\s+i\s+want\s+to/i.test(userMessage)
+  );
+
+  if (isStatementToRemember) {
+    return null;
+  }
+
+  const asksWhatWasRemembered = /\b(what|which|tell|show|do|list)\b.*\b(?:did\s+i\s+ask|have\s+i\s+asked|wanted|want|tell|told|ask|asked|say|said|remem(?:ber|eber)|memory|memories|stored|saved|know)\b/i.test(userMessage)
+    || (/\?$/i.test(userMessage) && /\bremem(?:ber|eber)\b/i.test(userMessage));
+  const asksPreference = /\b(what|which)\b.*\b(?:want|wanted|wanna|need|focus|priority)\b/i.test(userMessage);
   if (!asksWhatWasRemembered && !asksPreference) {
     return null;
   }
-  const result = asksWhatWasRemembered
-    ? memory.list({ userId: memorySession.userId }, memorySession)
-    : memory.search({
-      userId: memorySession.userId,
-      query: `${userMessage} focus priority project`,
-    }, memorySession);
+  const result = memory.search({
+    userId: memorySession.userId,
+    query: userMessage,
+  }, memorySession);
+
   if (!result.memories.length) {
     return {
       finalAnswer: 'I do not have a saved preference for you yet.',

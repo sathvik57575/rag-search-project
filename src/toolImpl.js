@@ -206,22 +206,37 @@ function get_employee_by_query(argumentsObject, context) {
   return get_employee(argumentsObject, context);
 }
 
+function enrichProject(project, contextData) {
+  if (!project) return project;
+  const owner = (contextData.employees || []).find((e) => e.id === project.ownerId);
+  return {
+    ...project,
+    ownerName: owner ? owner.name : null,
+  };
+}
+
 function get_project({ id, name } = {}, context) {
   const contextData = getContextData(context);
-  const matches = contextData.projects.filter(
+  let matches = contextData.projects.filter(
     (project) =>
       (id && project.id.toLowerCase() === String(id).toLowerCase()) ||
       (name && project.name.toLowerCase() === name.toLowerCase()),
   );
+  if (matches.length === 0 && name) {
+    matches = contextData.projects.filter((project) =>
+      project.name.toLowerCase().includes(name.toLowerCase()) ||
+      project.id.toLowerCase().includes(name.toLowerCase())
+    );
+  }
   if (matches.length === 0)
     return { error: "No project found", query: { id, name } };
   if (matches.length > 1)
     return {
       ambiguous: true,
       message: "Multiple projects matched; ask the user to clarify.",
-      matches,
+      matches: matches.map((p) => enrichProject(p, contextData)),
     };
-  return matches[0];
+  return enrichProject(matches[0], contextData);
 }
 
 function get_projects({ ownerId, ownerName, status, name } = {}, context) {
@@ -272,12 +287,14 @@ function get_projects({ ownerId, ownerName, status, name } = {}, context) {
     ownerId = matches[0].id;
   }
 
-  const projects = contextData.projects.filter(
-    (project) =>
-      (!ownerId || project.ownerId === ownerId) &&
-      (!status || project.status === status) &&
-      (!name || project.name.toLowerCase().includes(name.toLowerCase())),
-  );
+  const projects = contextData.projects
+    .filter(
+      (project) =>
+        (!ownerId || project.ownerId === ownerId) &&
+        (!status || project.status === status) &&
+        (!name || project.name.toLowerCase().includes(name.toLowerCase())),
+    )
+    .map((p) => enrichProject(p, contextData));
   return { count: projects.length, projects };
 }
 
