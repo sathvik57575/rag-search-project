@@ -1266,3 +1266,221 @@ Models: the default is qwen3:4b (Ollama). llama3.2 also works through Ollama. An
 9. Memory discipline. Long-term memories are saved only on explicit user request, updated under stable keys, forgotten on request, searched by relevance only, and strictly isolated per user. Short-term turns are bounded (last 8 kept, last 6 injected) and never auto-promoted to long-term storage.
 
 10. Dual-provider support through one normalized shape. Both the Ollama and Gemini adapters return the same assistant-message structure, so the agent loop, cache, validation, and confirmation logic are provider-independent.
+
+
+14. MULTI-AGENT EXTENSION
+--------------------------
+
+The next version adds a small team of specialized agents coordinated by a Coordinator Agent. The goal is to understand collaboration between agents instead of asking one general-purpose agent to own every domain.
+
+The specialists are:
+
+    Project Agent
+        Handles project identity, project status, delivery metrics, updates, and project-level risks.
+
+    Task Agent
+        Handles task lookup, overdue work, pending work, blocked work, and task-specific status questions.
+
+    Employee/Workload Agent
+        Handles employee lookup, project ownership, pending-task workload, and team capacity signals.
+
+The implementation is in:
+
+    src/multiAgent.js          Coordinator and specialist agent functions.
+    src/routes/coordinator.js  HTTP endpoint for the coordinator.
+    src/app.js                 Mounts POST /coordinator.
+    test/multi-agent.test.js   Routing, collaboration, ambiguity, and shared-context tests.
+
+The original POST /agent endpoint remains unchanged. It still demonstrates the LLM-driven tool-calling agent. POST /coordinator demonstrates deterministic multi-agent routing and collaboration over the same tool layer.
+
+
+15. MULTI-AGENT ARCHITECTURE
+-----------------------------
+
+The flow is:
+
+    Client query
+        |
+        v
+    Coordinator Agent
+        |-- classify intent
+        |-- choose one or more specialists
+        |-- create one request-scoped context
+        |-- run specialists against that shared context
+        |-- combine results into one response
+        v
+    Combined result or clarification request
+
+The Coordinator does not duplicate project-management business logic. It delegates to existing toolImpl functions such as get_project, get_tasks, get_employee, get_project_metrics, find_project_risks, and get_projects. This preserves one source of truth for validation and data access. The LLM chooses the specialist; the specialist chooses the relevant existing tools.
+
+The shared context is created with persist: false. That is intentional for this read-oriented coordinator: multiple specialists see the same snapshot, but a coordinator request cannot accidentally persist a mutation. The context also gives every specialist the same expanded dataset and the same request boundary.
+
+The Coordinator now uses the configured LLM to understand natural language and choose agents. It sends a routing prompt that requires a JSON list of specialist names, validates that list against the known agent directory, and then invokes only the selected specialists. The chooseAgents keyword helper remains exported for compatibility and simple unit checks, but it is no longer the production routing path.
+
+After specialist execution, the Coordinator sends the original query and structured specialist evidence to the LLM again. This synthesis step produces the human-readable finalAnswer. The raw results are still returned for transparency and debugging, but users no longer have to interpret the JSON themselves.
+
+The Coordinator uses the same provider adapter as the original /agent endpoint. Its default model is qwen3:4b through Ollama. The request may select llama3.2 through Ollama or a Gemini model when GEMINI_API_KEY is configured. The coordinator route accepts an optional model field.
+
+
+16. COORDINATOR ROUTING RULES
+------------------------------
+
+Project signals include project, portfolio, risk, metric, delivery, and update. These route to the Project Agent.
+
+Task signals include task, overdue, late, pending, blocked, unfinished, incomplete, and assign. These route to the Task Agent.
+
+Employee/workload signals include employee, person, people, team, workload, capacity, owner, and known employee names. These route to the Employee/Workload Agent.
+
+Status is intentionally disambiguated:
+
+    What is the status of Project Alpha?
+        Project Agent only.
+
+    What is the status of TASK1?
+        Task Agent only.
+
+    Tell me about the status.
+        No specialist selected; the Coordinator asks for clarification.
+
+When a query contains signals from several domains, the Coordinator selects several agents. For example, “Analyze Project Alpha overdue tasks and team workload” selects Project, Task, and Employee/Workload agents.
+
+
+17. SPECIALIST RESPONSIBILITIES
+-------------------------------
+
+Project Agent:
+
+1. Resolves a named project, or lists active projects when the query is portfolio-wide.
+2. Collects metrics when the query asks about progress, completion, status, delivery, or risk.
+3. Collects risk evidence when the query mentions risks, delays, blocked work, causes, or project health.
+4. Collects update history when the query asks for updates, latest reports, stale updates, or conflicting updates.
+
+Task Agent:
+
+1. Resolves a project name before querying project-specific tasks.
+2. Applies overdue and pending filters based on the query.
+3. Resolves a named employee when a task query is person-specific.
+4. Returns the actual task records and count, rather than inventing a summary.
+
+Employee/Workload Agent:
+
+1. Resolves a named employee, or lists employees for a general team query.
+2. Finds projects owned by each employee.
+3. Finds pending tasks assigned to each employee.
+4. Returns ownership and workload evidence that can be combined with project and task results.
+
+
+18. EXAMPLE FLOWS
+-----------------
+
+Example A: one specialized agent
+
+Request:
+
+    POST /coordinator
+    { "query": "What is the status of Project Alpha?" }
+
+Decision:
+
+    selectedAgents: ["project"]
+    collaboration: "single-specialist"
+
+The Project Agent resolves PROJ_ALPHA and returns the project record plus status-related metrics. The Task Agent and Employee/Workload Agent are not invoked because the question does not ask for tasks or workload.
+
+Example B: multiple specialized agents
+
+Request:
+
+    { "query": "Analyze Project Alpha overdue tasks and team workload." }
+
+Decision:
+
+    selectedAgents: ["project", "task", "employee"]
+    collaboration: "multi-specialist-combined"
+
+The Project Agent returns project and risk evidence, the Task Agent returns overdue tasks, and the Employee/Workload Agent returns ownership and pending workload. All three operate against the same request snapshot.
+
+Example C: combining results
+
+The Coordinator returns a results array containing one result per specialist. It also creates a concise finalAnswer stating what each agent found. The raw structured results are retained so a UI or a later synthesis model can produce a richer explanation without rerunning the data queries.
+
+Example D: ambiguous query
+
+Request:
+
+    { "query": "Tell me about the status." }
+
+Response:
+
+    status: "needs_clarification"
+    selectedAgents: []
+
+The Coordinator does not guess whether status means a project, a task, or an employee workload. It asks the user to clarify the domain. This is a key multi-agent behavior: routing uncertainty is surfaced instead of silently choosing the wrong specialist.
+
+
+19. MULTI-AGENT TEST CASES
+---------------------------
+
+The tests are in test/multi-agent.test.js and run with:
+
+    npm run test:multi-agent
+
+They are also included in the full npm test command.
+
+Test 1 - Single specialist routing
+
+Input: “What is the status of Project Alpha?”
+Expected: the injected coordinator model selects only Project Agent; the result is completed with single-specialist collaboration and a synthesized natural-language answer.
+
+Test 2 - Task specialist routing
+
+Input: “Show overdue tasks for Project Alpha.”
+Expected: Project Agent resolves the project and Task Agent returns overdue tasks scoped to PROJ_ALPHA.
+
+Test 3 - Multiple agents
+
+Input: “Analyze Project Alpha overdue tasks and team workload.”
+Expected: Project, Task, and Employee/Workload agents are selected.
+
+Test 4 - Combined results
+
+Expected: the response contains three specialist result entries and a final answer mentioning each specialist contribution.
+
+Test 5 - Ambiguous routing
+
+Input: “Tell me about the status.”
+Expected: the coordinator model returns an empty agent list, status is needs_clarification, and no specialist is selected.
+
+Test 6 - Shared context
+
+Expected: project and task specialists see the same PROJ_ALPHA snapshot, and task records returned by the Task Agent belong to PROJ_ALPHA.
+
+Test 7 - Existing failure behavior remains protected
+
+The existing test suites continue to cover invalid IDs, missing projects, ambiguous employees, conflicting updates, malformed task data, memory isolation, mutation confirmation, duplicate calls, and model/tool failure handling. The multi-agent layer reuses those tools instead of bypassing their validation.
+
+
+20. WHY MULTIPLE AGENTS ARE USEFUL
+-----------------------------------
+
+Specialization reduces the amount of domain knowledge each agent needs to reason about. The Project Agent does not need to understand employee workload rules, and the Employee/Workload Agent does not need to own project risk analysis.
+
+Specialization also improves observability. The system can show which agent produced which evidence, making it easier to identify whether a bad answer came from routing, project analysis, task filtering, or workload calculation.
+
+The trade-off is coordination overhead. More agents mean more interfaces, more routing decisions, and more opportunities for inconsistent results. The shared request context and structured results reduce this risk, while tests make the routing contract explicit.
+
+
+21. LIMITATIONS AND NEXT STEPS FOR THE MULTI-AGENT DESIGN
+-----------------------------------------------------------
+
+1. LLM routing can still misunderstand synonyms or complex language. The JSON routing contract and agent-name validation reduce, but do not eliminate, that risk.
+
+2. The current Coordinator uses one LLM synthesis call after specialist execution. A future dedicated synthesis stage could compare contradictions and produce a more analytical final report.
+
+3. Specialists currently run sequentially in JavaScript. Independent specialists could run concurrently with Promise.all while retaining one immutable read snapshot.
+
+4. The coordinator endpoint is read-only by design. Future mutation workflows should route proposed changes through the existing confirmation gate and return one combined approval request.
+
+5. The project still uses JSON data and file-backed memory. Production multi-agent deployments would need a database, authentication, audit logs, tracing, timeouts, and per-agent access policies.
+
+The main learning is that collaboration is an architecture: a coordinator decides who should act, specialists own bounded responsibilities, shared context keeps their evidence consistent, and structured results make synthesis and debugging possible.

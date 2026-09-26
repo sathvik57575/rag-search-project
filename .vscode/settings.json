@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^node -e \"const m=require\\('\\./src/multiAgent'\\); const one=m\\.runCoordinator\\('What is the status of Project Alpha\\?'\\); const task=m\\.runCoordinator\\('What is the status of TASK1\\?'\\); const many=m\\.runCoordinator\\('Analyze Project Alpha overdue tasks and team workload'\\); const unclear=m\\.runCoordinator\\('Tell me about the status'\\); if\\(one\\.selectedAgents\\.join\\(\\)!=='project'\\) throw Error\\('project routing failed: '\\+one\\.selectedAgents\\); if\\(task\\.selectedAgents\\.join\\(\\)!=='task'\\) throw Error\\('task routing failed: '\\+task\\.selectedAgents\\); if\\(many\\.selectedAgents\\.length!==3\\) throw Error\\('multi routing failed: '\\+many\\.selectedAgents\\); if\\(unclear\\.status!=='needs_clarification'\\) throw Error\\('ambiguity handling failed'\\); console\\.log\\(JSON\\.stringify\\(\\{one:one\\.selectedAgents,task:task\\.selectedAgents,many:many\\.selectedAgents,unclear:unclear\\.status,collaboration:many\\.collaboration\\}, null, 2\\)\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

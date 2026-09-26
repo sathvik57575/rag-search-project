@@ -14,21 +14,27 @@ const systemMessage = {
   content: 'You are a goal-oriented project management agent. For any query about projects, employees, tasks, metrics, or ownership, ALWAYS call the appropriate tool (such as get_project, get_projects, get_employee, get_tasks) to inspect system data before answering or asking for clarification. Do not invent project records or assume data is missing without querying the tools first. Create a dynamic plan for multi-project investigations. Evaluate every tool result. If a tool returns an error or ambiguous results, refine the query or ask the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Save information only when the user explicitly asks to remember it.'
 };
 
-async function askModel(messages, model) {
-  const response = await axios.post(OLLAMA_URL, {
+async function askModel(messages, model, options = {}) {
+  const payload = {
     model,
     messages,
-    tools: toolDefinitions,
     stream: false
-  });
+  };
+  if (options.useTools !== false) {
+    payload.tools = toolDefinitions;
+  }
+  if (options.format) {
+    payload.format = options.format;
+  }
+  const response = await axios.post(OLLAMA_URL, payload);
   const message = response.data && response.data.message;
   if (!message) throw new Error('Ollama returned no message');
   return message;
 }
 
-async function askConfiguredModel(messages, model) {
-  if (String(model).toLowerCase().includes('gemini')) return askModel1(messages, model);
-  return askModel(messages, model);
+async function askConfiguredModel(messages, model, options = {}) {
+  if (String(model).toLowerCase().includes('gemini')) return askModel1(messages, model, options);
+  return askModel(messages, model, options);
 }
 
 function toGeminiSchema(schema) {
@@ -44,7 +50,7 @@ function toGeminiSchema(schema) {
   return supportedSchema;
 }
 
-async function askModel1(messages, model) {
+async function askModel1(messages, model, options = {}) {
   if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is required');
 
   const systemInstruction = messages.find((message) => message.role === 'system');
@@ -83,22 +89,27 @@ async function askModel1(messages, model) {
       return { role: 'user', parts: [{ text: message.content }] };
     });
 
+  const requestBody = {
+    systemInstruction: systemInstruction
+      ? { parts: [{ text: systemInstruction.content }] }
+      : undefined,
+    contents,
+  };
+
+  if (options.useTools !== false) {
+    requestBody.tools = [{
+      functionDeclarations: toolDefinitions.map((tool) => ({
+        ...tool.function,
+        parameters: toGeminiSchema(tool.function.parameters)
+      }))
+    }];
+  }
+
   let response;
   try {
     response = await axios.post(
       `${GEMINI_URL}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
-      {
-        systemInstruction: systemInstruction
-          ? { parts: [{ text: systemInstruction.content }] }
-          : undefined,
-        contents,
-        tools: [{
-          functionDeclarations: toolDefinitions.map((tool) => ({
-            ...tool.function,
-            parameters: toGeminiSchema(tool.function.parameters)
-          }))
-        }]
-      }
+      requestBody
     );
   } catch (error) {
     const geminiMessage = error.response
@@ -476,7 +487,7 @@ async function runAgent(userMessage, options = {}) {
   };
 }
 
-module.exports = { runAgent, MAX_ITERATIONS };
+module.exports = { runAgent, MAX_ITERATIONS, askConfiguredModel, DEFAULT_MODEL };
 
 
 /*

@@ -1,0 +1,720 @@
+MULTI AGENT COORDINATOR ROUTE (/coordinator) TECHNICAL DOCUMENTATION
+
+
+1. OVERVIEW & ARCHITECTURE
+
+I built the /coordinator route so that complex project management requests can be handled by multiple specialized agents working together. The old /agent route runs one single agent with all 18 tools, but I found that for big questions, having one coordinator agent supervise smaller specialist agents works much better.
+
+System Architecture Diagram:
+
+   Client Request (POST /coordinator)
+                   |
+         src/routes/coordinator.js
+                   |
+         src/multiAgent.js (runCoordinator)
+                   |
+     +-------------+-------------+
+     | Ambiguity Check           |
+     | (isGenericAmbiguousQuery) |
+     +-------------+-------------+
+                   |
+        [Target Entity Specified?]
+          |                   |
+          NO                  YES
+          |                    |
+Return Clarification     Model Routing (askCoordinator)
+(needs_clarification)    + Fallback (chooseAgents)
+                               |
+                     Selected Specialists:
+              +----------------+---------------+
+              |                |               |
+              v                v               v
+       Project Agent      Task Agent    Employee Agent
+       (runProjectAgent) (runTaskAgent) (runEmployeeAgent)
+              |                |               |
+              +----------------+---------------+
+                               |
+                               v
+                    Shared Execution Context
+                     (src/toolImpl.js)
+                               |
+                               v
+                    Synthesizer LLM Call
+                    + Fallback (summarize)
+                               |
+                               v
+                    Final Response (JSON)
+
+
+2. NEW FILES AND WHAT I BUILT IN EACH
+
+A. src/app.js (Route Registration)
+I updated src/app.js to import coordinatorRouter and mounted it at /coordinator:
+const coordinatorRouter = require('./routes/coordinator');
+app.use('/coordinator', coordinatorRouter);
+
+B. src/routes/coordinator.js (HTTP Endpoint)
+I created this file to handle POST requests to /coordinator. It checks that the user sent a valid query string in req.body, calls runCoordinator(query, { model }) from multiAgent.js, and sends back the JSON result.
+
+C. src/multiAgent.js (Core Coordinator & Specialist Logic)
+I built this file as the main engine for multi-agent delegation. Here is what I put in it:
+
+1. SPECIALIZED_AGENTS Directory:
+I defined three specialist agents:
+- project: Handles project status, metrics, updates, and risks.
+- task: Handles task searches, overdue work, pending tasks, and task status.
+- employee: Handles employee lookups, project ownership, and workload.
+
+2. isGenericAmbiguousQuery(query):
+I added this function to catch vague prompts like "Tell me about the status.." that do not mention any specific project, employee, or task ID. When it catches one, I stop early and ask the user for clarification.
+
+3. runCoordinator(query, options):
+This is the main function I wrote to run the multi-agent workflow:
+- First I run the ambiguity check.
+- If it passes, I ask the model to pick which agents we need ("project", "task", "employee"). I turn off tools (useTools: false) and set format: "json" so local models like Llama3.2 do not get confused.
+- If model routing fails or gives bad JSON, I use my fallback function chooseAgents(query) so it never crashes.
+- Next I create one shared execution context (tools.createContext({ persist: false })) and run the chosen specialist runners.
+- Finally I ask the model to synthesize all specialist evidence into one clear answer. If synthesis fails, I use my summarize() helper function as a fallback.
+
+4. Specialist Runners:
+- runProjectAgent: Looks up projects using get_project / get_projects and attaches metrics, risks, and updates.
+- runTaskAgent: Finds matching tasks using get_tasks with overdue or pending filters.
+- runEmployeeAgent: Looks up employee details, owned projects, and workload using get_employee and get_tasks.
+
+
+3. STEP-BY-STEP HOW A REQUEST WORKS
+
+Step 1: The user sends a POST request to /coordinator with a query and model name.
+Step 2: I check if the query is too ambiguous. If it is vague without a specific target, I stop and return status "needs_clarification".
+Step 3: If it has a target, I ask the model to pick the agents. If model routing fails, my chooseAgents() fallback picks them.
+Step 4: I create one shared context object so all agents inspect the exact same data.
+Step 5: The selected specialist runners fetch project, task, or employee data from toolImpl.js.
+Step 6: I pass the query and all specialist results to the synthesizer prompt to write the answer. If that fails, summarize() writes it.
+Step 7: The server returns the final JSON response to the user.
+
+
+4. MODEL PERFORMANCEs
+Gemini (gemini-3.5-flash-lite): Works great for both routing and synthesis
+
+qwen3:4b: Works well for most cases.
+
+Llama 3.2: Failed some multi-agent routing cases because Ollama was sending tools in the API body. I fixed this by setting useTools: false for routing calls and adding fallback functions so Llama queries always complete successfully.
+
+
+*****************************************************************************
+Test Cases
+*****************************************************************************
+
+Request 1:
+
+{
+    "query": "What is the status of Project Alpha?",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "**Project Alpha** is currently **active** and owned by **Priya Shah**. \n\nHere are the key metrics and status details for the project:\n* **Status:** Active\n* **Start Date:** January 1, 2026\n* **Deadline:** September 30, 2026\n* **Budget:** $250,000\n* **Completion Rate:** 31% (4 out of 13 tasks completed)\n* **Task Breakdown:**\n  * **Done:** 4 tasks\n  * **In Progress:** 1 task\n  * **To Do:** 8 tasks\n  * **Overdue:** 2 tasks"
+}
+
+
+Request 2:
+
+{
+    "query": "Analyze Project Alpha overdue tasks and team workload.",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task",
+        "employee"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [.....]
+    "finalAnswer": "Project Alpha has 4 overdue tasks:\n\n1. Delivery task 12 (assigneeId: EMP12, dueDate: 2026-10-20, actualHours: 9, estimatedHours: 10)\n2. Delivery task 14 (assigneeId: EMP14, dueDate: 2026-10-20, actualHours: 11, estimatedHours: 12)\n3. Delivery task 17 (assigneeId: EMP17, dueDate: 2026-10-20, actualHours: 14, estimatedHours: 10)\n4. Delivery task 19 (assigneeId: EMP19, dueDate: 2026-10-20, actualHours: 7, estimatedHours: 12)\n\nTotal estimated hours for these tasks: 10 + 12 + 10 + 12 = 44\n\nTotal actual hours for these tasks: 9 + 11 + 14 + 7 = 41\n\nThe team is 3 hours behind on Project Alpha. \n\nThe team workload can be analyzed by looking at the number of tasks assigned to each employee. Employee EMP12 has 2 overdue tasks, EMP14 has 1 overdue task, EMP17 has 1 overdue task, and EMP19 has 1 overdue task. \n\nEmployee EMP12 has a total of 2 overdue tasks and 1 pending task (Delivery task 92), which suggests that they are heavily loaded.\n\nEmployee EMP14 has a total of 1 overdue task and 3 pending tasks (Delivery task 92, Delivery task 94, and Delivery task 56), which suggests that they are also heavily loaded.\n\nEmployee EMP17 has a total of 1 overdue task and 4 pending tasks (Delivery task 97, Delivery task 37, Delivery task 57, and Delivery task 77), which suggests that they are very heavily loaded.\n\nEmployee EMP19 has a total of 1 overdue task and 3 pending tasks (Delivery task 39, Delivery task 59, and Delivery task 79), which suggests that they are moderately loaded.\n\nOverall, the team has a significant workload imbalance, with EMP17 and EMP12 being heavily loaded, and EMP14 and EMP19 being moderately loaded."
+}
+
+
+
+Request 3:
+
+{
+    "query": "Tell me about the status.",
+    "model": "llama3.2"
+}
+//this is a generic request, so it should ask for further clarification
+
+{
+    "status": "needs_clarification",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [],
+    "message": "Should I investigate projects, tasks, or employee workload?",
+    "agentDirectory": {
+        "project": {
+            "name": "Project Agent",
+            "description": "Handles project identity, status, metrics, updates, and project risk."
+        },
+        "task": {
+            "name": "Task Agent",
+            "description": "Handles task discovery, overdue work, pending work, and task status."
+        },
+        "employee": {
+            "name": "Employee/Workload Agent",
+            "description": "Handles employee lookup, ownership, workload, and assignee concentration."
+        }
+    }
+}
+
+
+Request 4:
+
+asking it some difficult questions
+
+{
+    "query": "who is the employee with highest todo tasks",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "employee"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...]
+    "finalAnswer": "To determine which employee has the most Todo tasks, we need to find the employee with the most tasks in their \"pendingTasks\" array.\n\nAfter analyzing the data, I found that **Team Member 13** (EMP13) has the most Todo tasks with a total of **5** tasks:\n\n1. TASK13 (PROJ_ALPHA)\n2. TASK33 (PROJ_GAMMA)\n3. TASK53 (PROJ_EPSILON)\n4. TASK73 (PROJ_ZETA)\n5. TASK93 (PROJ_THETA)\n\nTherefore, Team Member 13 (EMP13) has the highest number of Todo tasks among all employees."
+}
+
+
+
+Request 5:
+
+{
+    "query": "which project has highest tasks",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...]
+    "finalAnswer": "According to the specialist evidence, Project Alpha has the highest number of tasks with a count of 8."
+}
+
+
+
+Request 6:
+
+This query requires mathematical Logic
+
+{
+    "query": "what is the ratio of todo, in_progress, and done tasks",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...]
+    "finalAnswer": "For “what is the ratio of todo, in_progress, and done tasks”: Task Agent found 105 matching task(s). The coordinator combined these specialist results into one response."
+}
+
+So this resulted in a failure, as it didn't give us the ratio
+
+
+Request 7:
+
+{
+    "query": "what is the ratio of todo, in_progress, and done tasks in x:y:z proportion",
+    "model": "gemini-3.5-flash-lite"
+}
+
+Testing it with a different model
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "gemini-3.5-flash-lite",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...]
+    "finalAnswer": "To calculate the ratio of done, todo, and in_progress tasks, we need to first count the number of each type of task.\n\nHere is the task data:\n\n**Task Data:**\n\n| Task ID | Project ID | Title | Assignee ID | Due Date | Status |\n| --- | --- | --- | --- | --- | --- |\n| ... | ... | ... | ... | ... | ... |\n\nAfter extracting the task data from the JSON response, I count the number of each type of task:\n\n**Done Tasks:** 43\n**Todo Tasks:** 44\n**In Progress Tasks:** 24\n\nNow, to calculate the ratio, I'll use the proportions of each type of task:\n\n**Done (D):** 43\n**Todo (T):** 44\n**In Progress (I):** 24\n\nTo find the ratio, I'll divide each number by the smallest number (24) to normalize the proportions:\n\n**D:** 43 / 24 ≈ 1.79\n**T:** 44 / 24 ≈ 1.83\n**I:** 24 / 24 = 1.00\n\nSo, the ratio of done, todo, and in_progress tasks is approximately **1.79:1.83:1.00**.\n\nIf you want to simplify the ratio, you can divide all three numbers by the smallest one (1.00), which leaves us with **179:183:1**.\n\nThis ratio represents the proportion of tasks in each status. You can adjust the format to your liking (e.g., decimal, percentage, or any other representation)."
+}
+
+This gave an answer, so the previous failure was a model limitation
+
+
+Request 8:
+
+Asking it more complicated questions.
+
+{
+  "query": "Find delayed projects with stale updates or conflicting risk levels.",
+  "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "To find delayed projects with stale updates or conflicting risk levels, I'll analyze the provided data.\n\n**Delayed Projects**\n\nFirst, let's identify the delayed projects. We can do this by checking the `deadline` and `startDate` of each project.\n\nFrom the data, I see that the following projects are delayed:\n\n* Project Eta (PROJ_ETA) - deadline: 2026-11-15, start date: 2026-01-15 (6 months late)\n* Project Theta (PROJ_THETA) - deadline: 2026-10-15, start date: 2026-01-15 (4 months late)\n* Project Empty (PROJ_EMPTY) - deadline: 2026-11-15, start date: 2026-01-15 (6 months late)\n* Project Gamma (PROJ_GAMMA) - deadline: 2026-08-01, start date: 2026-01-15 (7 months late)\n* Project Zeta (PROJ_ZETA) - deadline: 2026-08-01, start date: 2026-01-15 (7 months late)\n\n**Stale Updates**\n\nNow, let's check for stale updates. A stale update is an update that has not been updated recently.\n\nFrom the data, I see that the following projects have stale updates:\n\n* Project Eta (PROJ_ETA) - update 1 (UPD7) has not been updated recently (last updated on 2026-09-10)\n* Project Theta (PROJ_THETA) - update 1 (UPD8) has not been updated recently (last updated on 2026-09-10)\n* Project Empty (PROJ_EMPTY) - no updates\n* Project Gamma (PROJ_GAMMA) - no updates\n* Project Zeta (PROJ_ZETA) - no updates\n\n**Conflicting Risk Levels**\n\nFinally, let's check for conflicting risk levels. A conflicting risk level is when the risk level of an update is different from the risk level of the project.\n\nFrom the data, I see that the following projects have conflicting risk levels:\n\n* Project Eta (PROJ_ETA) - update 1 (UPD7) has a risk level of \"low\", while the project risk level is \"high\"\n* Project Theta (PROJ_THETA) - update 1 (UPD8) has a risk level of \"low\", while the project risk level is \"high\"\n* Project Empty (PROJ_EMPTY) - no updates\n* Project Gamma (PROJ_GAMMA) - no updates\n* Project Zeta (PROJ_ZETA) - no updates\n\n**Delayed Projects with Stale Updates or Conflicting Risk Levels**\n\nThe following projects are delayed and have either stale updates or conflicting risk levels:\n\n* Project Eta (PROJ_ETA) - deadline: 2026-11-15, start date: 2026-01-15, stale update (UPD7) with conflicting risk level (\"low\" vs. \"high\")\n* Project Theta (PROJ_THETA) - deadline: 2026-10-15, start date: 2026-01-15, stale update (UPD8) with conflicting risk level (\"low\" vs. \"high\")\n\nNote that the other delayed projects do not have stale updates or conflicting risk levels."
+}
+
+
+Request 9:
+
+{
+  "query": "Show all pending tasks assigned to Priya Shah.",
+  "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results": [
+        {
+            "agent": "task",
+            "result": {
+                "count": 4,
+                "tasks": [
+                    {
+                        "id": "TASK23",
+                        "projectId": "PROJ_BETA",
+                        "title": "Delivery task 23",
+                        "assigneeId": "EMP3",
+                        "dueDate": "2026-10-20",
+                        "status": "todo",
+                        "estimatedHours": 11,
+                        "actualHours": 11
+                    },
+                    {
+                        "id": "TASK43",
+                        "projectId": "PROJ_DELTA",
+                        "title": "Delivery task 43",
+                        "assigneeId": "EMP3",
+                        "dueDate": "2026-10-20",
+                        "status": "todo",
+                        "estimatedHours": 11,
+                        "actualHours": 13
+                    },
+                    {
+                        "id": "TASK83",
+                        "projectId": "PROJ_ETA",
+                        "title": "Delivery task 83",
+                        "assigneeId": "EMP3",
+                        "dueDate": "2026-10-20",
+                        "status": "todo",
+                        "estimatedHours": 11,
+                        "actualHours": 8
+                    },
+                    {
+                        "id": "TASK103",
+                        "projectId": "PROJ_THETA",
+                        "title": "Delivery task 103",
+                        "assigneeId": "EMP3",
+                        "dueDate": "2026-10-20",
+                        "status": "todo",
+                        "estimatedHours": 11,
+                        "actualHours": 10
+                    }
+                ]
+            }
+        }
+    ],
+    "finalAnswer": "There are 4 pending tasks assigned to Priya Shah. \n\nHere are the tasks:\n\n1. TASK23: \n   - Project ID: PROJ_BETA\n   - Title: Delivery task 23\n   - Assignee ID: EMP3\n   - Due Date: 2026-10-20\n   - Status: todo\n   - Estimated Hours: 11\n   - Actual Hours: 11\n\n2. TASK43: \n   - Project ID: PROJ_DELTA\n   - Title: Delivery task 43\n   - Assignee ID: EMP3\n   - Due Date: 2026-10-20\n   - Status: todo\n   - Estimated Hours: 11\n   - Actual Hours: 13\n\n3. TASK83: \n   - Project ID: PROJ_ETA\n   - Title: Delivery task 83\n   - Assignee ID: EMP3\n   - Due Date: 2026-10-20\n   - Status: todo\n   - Estimated Hours: 11\n   - Actual Hours: 8\n\n4. TASK103: \n   - Project ID: PROJ_THETA\n   - Title: Delivery task 103\n   - Assignee ID: EMP3\n   - Due Date: 2026-10-20\n   - Status: todo\n   - Estimated Hours: 11\n   - Actual Hours: 10"
+}
+
+
+Request 10:
+
+{
+  "query": "What is the progress?",
+  "model": "llama3.2"
+}
+
+{
+    "status": "needs_clarification",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [],
+    "message": "Should I investigate projects, tasks, or employee workload?",
+    "agentDirectory": {
+        "project": {
+            "name": "Project Agent",
+            "description": "Handles project identity, status, metrics, updates, and project risk."
+        },
+        "task": {
+            "name": "Task Agent",
+            "description": "Handles task discovery, overdue work, pending work, and task status."
+        },
+        "employee": {
+            "name": "Employee/Workload Agent",
+            "description": "Handles employee lookup, ownership, workload, and assignee concentration."
+        }
+    }
+}
+
+
+Request 11:
+
+{
+    "query": "give me all information about the person responsible for task9",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "task",
+        "employee"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [....],
+    "finalAnswer": "Task 9 (\"Delivery task 9\" under Project Alpha) is assigned to **Team Member 9** (**EMP9**). \n\nHere is the information available for Team Member 9:\n\n* **Name:** Team Member 9\n* **Employee ID:** EMP9\n* **Department:** Engineering\n* **Role:** Analyst\n* **Managed Projects:** Owner of Project Theta (`PROJ_THETA`), an active project (Start: 2026-01-15, Deadline: 2026-10-15, Budget: $175,000).\n* **Workload:** 5 pending tasks in total.\n* **Pending Tasks:**\n  1. **TASK9:** \"Delivery task 9\" (Project Alpha) – Due: 2026-10-20, Status: `todo`, Estimated Hours: 12, Actual Hours: 6.\n  2. **TASK29:** \"Delivery task 29\" (Project Gamma) – Due: 2026-10-20, Status: `todo`, Estimated Hours: 12, Actual Hours: 8.\n  3. **TASK49:** \"Delivery task 49\" (Project Delta) – Due: 2026-10-20, Status: `todo`, Estimated Hours: 12, Actual Hours: 10.\n  4. **TASK69:** \"Delivery task 69\" (Project Zeta) – Due: 2026-10-20, Status: `todo`, Estimated Hours: 12, Actual Hours: 12.\n  5. **TASK89:** \"Delivery task 89\" (Project Eta) – Due: 2026-10-20, Status: `todo`, Estimated Hours: 12, Actual Hours: 14."
+}
+
+
+Request 12:
+
+Another mathematical request
+
+{
+    "query": "what is the total estimated hours of all tasks in the project project alpha",
+    "model": "llama3.2"
+}
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "The specialist evidence indicates that the total estimated hours of all tasks in the project \"Project Alpha\" can be calculated by summing up the \"estimatedHours\" attribute of each task.\n\nFrom the evidence, we can see that there are 13 tasks in total. The estimated hours for each task are:\n\n* TASK7: 10 hours\n* TASK8: 11 hours\n* TASK9: 12 hours\n* TASK10: 8 hours\n* TASK11: 9 hours\n* TASK12: 10 hours\n* TASK13: 11 hours\n* TASK14: 12 hours\n* TASK15: 8 hours\n\nThe total estimated hours of all tasks in the project \"Project Alpha\" is: 10 + 11 + 12 + 8 + 9 + 10 + 11 + 12 + 8 = 102 hours"
+}
+
+
+
+Request 13:
+
+Testing big results with gemini
+
+{
+    "query": "what is the total estimated hours of all todo tasks",
+    "model": "gemini-3.5-flash-lite"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "gemini-3.5-flash-lite",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "Based on the task data, the total estimated hours for all tasks with the status `\"todo\"` is **603 hours**. \n\n*(Note: This total includes tasks that explicitly specify estimated hours and are marked as `\"todo\"`, excluding tasks with statuses such as `done`, `in_progress`, `blocked`, or `unknown`.)*"
+}
+
+
+Request 14:
+
+Now let us try the same with a different local model and test accuracy.
+Qwen3:4b is a smarter model than llama3.2 but is much slower
+
+{
+    "query": "what is the total estimated hours of all todo tasks",
+    "model": "qwen3:4b"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "qwen3:4b",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results":[...],
+    "finalAnswer": "The task requires calculating the sum of `estimatedHours` for all tasks in a JSON array where the `status` is `\"todo\"`. Based on the provided data and standard problem conventions, the final answer is derived from the sum of relevant values across the given tasks.\n\n$$\n\\boxed{511}\n$$"
+}
+
+As we can see this resulted in a failure. It ran for 25 minutes. I tried adjusting the prompt several times but it failed. So the model qwen3:4b is unable to handle big payloads or is just not smart enough to handle big mathematical calculations
+
+
+Request 15:
+{
+    "query": "what is the ratio of total estimated hours of all todo tasks to all done tasks to all in_progress tasks",
+    "model": "gemini-3.5-flash-lite"
+}
+
+Testing with more complex questions
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "gemini-3.5-flash-lite",
+    "selectedAgents": [
+        "task"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "Based on the task data provided, here are the total estimated hours for each status category:\n\n* **Todo tasks:** 602 hours\n* **Done tasks:** 105 hours\n* **In_progress tasks:** 2 hours (Task 1 and Task 5 have status `in_progress`, but neither contains an `estimatedHours` value, so the sum is 0 or negligible based on recorded estimates; however, if counting explicit fields present, the total estimated hours for tasks explicitly marked `in_progress` with recorded estimates is 0).\n\nExpressed as a ratio (Todo : Done : In_progress):\n**602 : 105 : 0**"
+}
+
+Gemni provided the correct answer 
+
+Request 16:
+{
+    "query": "what is the ratio of total estimated hours of all todo tasks to all done tasks to all in_progress tasks",
+    "model": "llama3.2"
+}
+Now let us test the same with a local model. We're testing it with llama3.2 and not qwen3 as qwen takes a lot of time, and may not even give answer.
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "Let's first count the number of tasks that are in each of these states:\n\n**Todo**: 24 tasks\n**Done**: 14 tasks\n**In Progress**: 26 tasks (we can't count the \"done\" tasks, as they are no longer in progress)\n\nNext, we need to calculate the total estimated hours for each category:\n\n**Total Estimated Hours**:\n* Todo: 24 tasks × 10.4 hours/task = 251.6 hours\n* Done: 14 tasks × 8.4 hours/task = 117.6 hours\n* In Progress: 26 tasks × 10.4 hours/task = 271.4 hours\n\nNow, we can calculate the ratio:\n\n**Ratio of Total Estimated Hours:**\n* Todo: 251.6 hours / 251.6 hours = 1 (or 100%)\n* Done: 117.6 hours / 251.6 hours = 0.466 (or approximately 46.6%)\n* In Progress: 271.4 hours / 251.6 hours = 1.080 (or approximately 108.0%)\n\nSo, the ratio of total estimated hours of all **todo** tasks to all **done** tasks to all **in_progress** tasks is approximately:\n\n1 : 0.466 : 1.080"
+}
+
+This request gave us an answer, but it is the wrong answer. Since the query is too complex the local model hallucinated and made up values someway in the middle instead of answering accurately. This is another edge case and a limitation.
+
+
+Request 17:
+
+Testing model's choosing and decision making skills
+
+{
+    "query": "what is the budget of all active projects",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "The specialist evidence shows the budget for all active projects as follows:\n\nThe total budget for all active projects is: $250,000 + $180,000 + $210,000 + $165,000 + $195,000 + $150,000 + $175,000 + $90,000 = $1,545,000.\n\nThere are 8 active projects with the following budgets:\n\n1. Project Alpha: $250,000\n2. Project Beta: $180,000\n3. Project Delta: $210,000\n4. Project Epsilon: $165,000\n5. Project Zeta: $195,000\n6. Project Eta: $150,000\n7. Project Theta: $175,000\n8. Project Empty: $90,000"
+}
+
+I calculated the value, it gave the correct answer
+
+
+
+Request 18:
+
+Asking it time related mathematical questions
+
+{
+    "query": "how many projects need to be completed by the end of next month(october 2026)? ",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "According to the specialist evidence, there are 5 projects with deadlines in october 2026:\n  * Project Alpha (2026-09-30)\n  * Project Beta (2026-10-15)\n  * Project Delta (2026-10-15)\n  * Project Zeta (2026-10-15)\n  * Project Theta (2026-10-15)\n  * **Total Projects:** 5\n\n All of these projects have a status of \"active\" and are owned by different team members."
+}
+
+This is correct answer.
+
+
+Request 19:
+
+Asking it more complicated time and mathematical related queries.
+
+{
+    "query": "what is the ratio of number of projects and tasks that need to completed by the end of this month(october 2026)?  ",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "To find the ratio, we need to count the number of projects and tasks that need to be completed by the end of this month (october 2026).\n\nFrom the data, we can see that there are:\n\n* 3 projects: PROJ_ZETA, PROJ_ETA, and PROJ_THETA\n* 20 tasks: 10 tasks in PROJ_ZETA, 9 tasks in PROJ_ETA, and 1 task in PROJ_THETA (the last task, TASK104, has an unknown status)\n\nSo, the ratio of projects to tasks that need to be completed by the end of this month (october 2026) is:\n\n3 projects / 20 tasks = 0.15"
+}
+
+This is the wrong answer. I calculated them manually and llama3.2 gave the wrong answer to this question. As expected it can't handle this level of complicated questions.
+
+
+Request 20:
+
+Asking the same to gemini
+
+{
+    "query": "what is the ratio of number of projects and tasks that need to completed by the end of next month(october 2026)?  ",
+    "model": "gemini-3.5-flash-lite"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "gemini-3.5-flash-lite",
+    "selectedAgents": [
+        "project",
+        "task"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [....],
+    "finalAnswer": "Based on the project and task data for deadlines by the end of next month (October 2026):\n\n* **Projects with a deadline on or before October 31, 2026:** \n  * Project Alpha (2026-09-30)\n  * Project Beta (2026-10-15)\n  * Project Delta (2026-10-15)\n  * Project Zeta (2026-10-15)\n  * Project Theta (2026-10-15)\n  * **Total Projects:** 5\n\n* **Tasks that need to be completed (status is not 'done') with a due date on or before October 31, 2026:** \n  * **Total Tasks:** 71 (excluding tasks already marked as 'done' or with due dates outside this range).\n\nThe ratio of the number of projects to tasks that need to be completed by the end of October 2026 is **5 : 71**."
+}
+
+As expected this gave the correct answer which is 5:71.
+
+
+Request 21:
+
+Giving it more complicated and large paylaod tasks where it needs to use all 3 agents, and use results between them.
+
+{
+    "query": "Analyze all project details, metrics, risks, updates, all tasks, all employee details, employee workload etc, ",
+    "model": "llama3.2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "gemini-3.5-flash-lite",
+    "selectedAgents": [
+        "project",
+        "task",
+        "employee"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "Here is the comprehensive analysis based on the latest project management data:\n\n### **Project Details, Metrics & Statuses**\nThere are 8 active projects tracked across the team:\n1. **Project Alpha** (`PROJ_ALPHA`) — Owner: Priya Shah | Budget: $250,000 | Timeline: Jan 1, 2026 – Sep 30, 2026  \n   *Metrics:* 13 total tasks (4 done, 1 in progress, 8 to-do). Completion Rate: 31%.\n2. **Project Beta** (`PROJ_BETA`) — Owner: John Smith | Budget: $180,000 | Timeline: Jan 1, 2026 – Oct 15, 2026  \n   *Metrics:* 13 total tasks (2 done, 1 in progress, 9 to-do). Completion Rate: 15%.\n3. **Project Delta** (`PROJ_DELTA`) — Owner: Team Member 5 | Budget: $210,000 | Timeline: Jan 15, 2026 – Oct 15, 2026  \n   *Metrics:* 14 total tasks (2 done, 0 in progress, 10 to-do). Completion Rate: 14%.\n4. **Project Epsilon** (`PROJ_EPSILON`) — Owner: Team Member 6 | Budget: $165,000 | Timeline: Jan 15, 2026 – Nov 15, 2026  \n   *Metrics:* 13 total tasks (2 done, 0 in progress, 9 to-do). Completion Rate: 15%.\n5. **Project Zeta** (`PROJ_ZETA`) — Owner: Team Member 7 | Budget: $195,000 | Timeline: Jan 15, 2026 – Oct 15, 2026  \n   *Metrics:* 13 total tasks (3 done, 0 in progress, 9 to-do). Completion Rate: 23%.\n6. **Project Eta** (`PROJ_ETA`) — Owner: Team Member 8 | Budget: $150,000 | Timeline: Jan 15, 2026 – Nov 15, 2026  \n   *Metrics:* 13 total tasks (2 done, 0 in progress, 9 to-do). Completion Rate: 15%.\n7. **Project Theta** (`PROJ_THETA`) — Owner: Team Member 9 | Budget: $175,000 | Timeline: Jan 15, 2026 – Oct 15, 2026  \n   *Metrics:* 13 total tasks (2 done, 0 in progress, 10 to-do). Completion Rate: 15%.\n8. **Project Empty** (`PROJ_EMPTY`) — Owner: Team Member 10 | Budget: $90,000 | Timeline: Jan 15, 2026 – Nov 15, 2026  \n   *Metrics:* 0 total tasks. Completion Rate: 0%.\n\n---\n\n### **Task Status Overview**\nAcross all projects, there are 105 recorded tasks spanning various states:\n* **Done:** Multiple completed tasks (e.g., TASK3, TASK6, TASK10, TASK15, TASK20, TASK25, TASK30, TASK35, TASK40, TASK44, TASK50, TASK55, TASK60, TASK65, TASK70, TASK75, TASK80, TASK85, TASK95, TASK100).\n* **In Progress:** TASK1 (\"Fix login bug\") and TASK5 (\"Write API contract\").\n* **Blocked:** TASK18, TASK45, TASK54, TASK63, TASK72, TASK81, TASK90, and TASK99.\n* **Unknown / Inconsistent:** TASK104 on Project Delta contains an invalid status record (`unknown`) with no assignee or due date (`EMP999`).\n* **To-Do / Overdue:** A significant portion of tasks remain in to-do status, with several explicitly marked as overdue across projects.\n\n---\n\n### **Risks & Project Updates**\n* **Overdue Work (High Severity):** \n  * Project Alpha: 2 overdue tasks (TASK1, TASK2)\n  * Project Beta: 2 overdue tasks (TASK4, TASK5)\n  * Project Delta: 2 overdue tasks (TASK44, TASK48)\n  * Project Epsilon: 3 overdue tasks (TASK52, TASK56, TASK64)\n  * Project Zeta: 3 overdue tasks (TASK68, TASK72, TASK76)\n  * Project Eta: 2 overdue tasks (TASK84, TASK88)\n  * Project Theta: 2 overdue tasks (TASK92, TASK96)\n* **Blocked Work (High Severity):** Present in Project Beta (TASK18), Project Delta (TASK45), Project Epsilon (TASK54, TASK63), Project Zeta (TASK72), Project Eta (TASK81, TASK90), and Project Theta (TASK99).\n* **Schedule Slippage (High Severity):** Flagged across all active projects (Alpha, Beta, Delta, Epsilon, Zeta, Eta, Theta).\n* **Data Inconsistency (Medium Severity):** Found in Project Delta due to TASK104.\n* **Stale Updates (Medium Severity):** Found in Project Alpha (`UPD9`).\n* **Conflicting Updates (High Severity):** Logged across Projects Alpha, Beta, Delta, Epsilon, Zeta, Eta, and Theta involving multiple update records (e.g., updates `UPD1` through `UPD24`).\n* **Task Coverage (High Severity):** Project Empty (`PROJ_EMPTY`) currently has no task coverage (`0` tasks).\n\n---\n\n### **Employee Workload**\nThe team consists of 24 registered employees, exhibiting a varying distribution of pending tasks:\n* **John Smith (EMP1):** 6 pending tasks (including in-progress TASK1 and TASK5)\n* **John Doe (EMP2):** 7 pending tasks\n* **Priya Shah (EMP3):** 4 pending tasks\n* **Marcus Lee (EMP4):** 4 pending tasks\n* **Team Member 5 (EMP5):** 0 pending tasks\n* **Team Member 6 (EMP6):** 4 pending tasks\n* **Team Member 7 (EMP7):** 4 pending tasks\n* **Team Member 8 (EMP8):** 5 pending tasks\n* **Team Member 9 (EMP9):** 5 pending tasks\n* **Team Member 10 (EMP10):** 0 pending tasks\n* **Team Member 11 (EMP11):** 5 pending tasks\n* **Team Member 12 (EMP12):** 4 pending tasks\n* **Team Member 13 (EMP13):** 5 pending tasks\n* **Team Member 14 (EMP14):** 4 pending tasks\n* **Team Member 15 (EMP15):** 0 pending tasks\n* **Team Member 16 (EMP16):** 4 pending tasks\n* **Team Member 17 (EMP17):** 5 pending tasks\n* **Team Member 18 (EMP18):** 4 pending tasks\n* **Team Member 19 (EMP19):** 4 pending tasks\n* **Team Member 20 to 24 (EMP20–EMP24):** 0 pending tasks listed as active assignees, though some (like EMP20) have historical completed tasks."
+}
+
+************************************************************************************************************************************************************
+
+Analysis of report and KEY areas of improvement
+
+I added a total of 21 requests, and most of them returned correct answers, some of them resulted in failure due to various reasons.
+
+The coordinator routing logic itself worked correctly across all 21 requests. It consistently picked the right specialist agent(s) (project/task/employee) based on query intent, correctly triggered multi-specialist collaboration when a query spanned domains (e.g. Request 8, 11, 21), and correctly asked for clarification on vague queries (Request 3, 10) instead of guessing. So the agent selection/orchestration layer is working correctly.
+
+
+
+Detailed error analysis:
+
+Request 6: ratio of todo, in_progress, done tasks (llama3.2)
+
+The query asked for a ratio across 105 tasks. The finalAnswer just said "Task Agent found 105 matching task(s)" and stopped there, no numbers at all. This happened because the model was handed a huge JSON array as context and instead of iterating through every entry and tallying status counts, it just given up on the counting step entirely and just described the result set size. Small local models like llama3.2 have weak instruction following once the input gets long, so they tend to summarize what they see rather than execute a multi step procedure like "count how many have status X then status Y, then status Z, then express as a ratio." 
+
+
+Request 16: ratio of estimated hours across todo, done, in_progress (llama3.2)
+
+Here the model did attempt to do the work, but it invented an "hours per task" average(10.4 hours/task) that isn't there in the data, then multiplied that average by task counts to get totals. This is a hallucinated result. Rather than summing actual estimated hours values across every task object (which is tedious and requires tracking a running total across 50 plus entries), it approximated with a made up average and presented the result with full confidence, including decimal precision that implies real calculation. This is a known weakness of smaller models on long numeric extraction tasks, they substitute a plausible sounding values when the actual computation exceeds their working memory or token limit/context span over long context.
+
+
+Request 14: total estimated hours of todo tasks (qwen3:4b)
+
+This took 25 minutes and returned 511 instead of the correct 603. There are two separate problems here. First is latency, qwen3:4b is a larger, slower model for my laptop, so processing the full payload took an large amount of time regardless of accuracy. Second is that despite extra time, it still got the math wrong and gave zero explanation, just returned final number with no work. That suggests it wasn't actually summing every relevant entry either, it likely lost track partway through the array or some subset of tasks, similar to llama3.2 but was even slower than llama3.2 when it comes to this.
+
+
+Request 19: ratio of projects to tasks due by month end(llama3.2)
+
+The correct answer which was confirmed by gemini in Request 20 on the same data, is 5 projects to 71 tasks. But llama3.2 said 3 projects and 20 tasks. This suggests thelogic itself was applied inconsistently, it likely compared deadlines against this month literally rather than correctly interpreting the requested window, or dropped some projects whose deadlines were on boundary dates. So this is another model limitation where llama3.2 is just not smart enough.
+
+
+************************************************************************************************************************************************************
+
+Areas of improvement:
+
+1. Parallel Specialist Agent Execution
+Currently in my project i.e src/multiAgent.js, specialist functions run synchronously in sequence using .map().
+Improvement: If specialist agents need to fetch data asynchronously, update execution to use Promise.all() to run specialists in parallel, reducing overall response latency, this would be a lot better in both time and accuracy.
+
+
+2. Adding Conversation Memory to the Coordinator Route
+The /coordinator route is currently completely stateless. Unlike the /agent route (which manages short term sliding window history and long-term memory in data/memory.json), the /coordinator route treats each incoming request independently without reading or recording conversation history.
+Improvement: We can integrate session memory and conversation tracking (keyed by conversationId and userId) just lije we did in /agent route. This would allow multi requests to retain context. Context is very impotant in a multi agent system.
+
+3. Native Structured Outputs (JSON Schema Mode)
+Currently we are routing response parsing uses regex string matching (parseJsonResponse).
+Improvement: Instead we can use native structured Outputs or JSON Schema mode supported by Ollama (format: schema) and Gemini (responseSchema). This guarantees 100% strict JSON schema output from models without relying on string regex parsing.
+
+4. Semantic Memory Search with Vector Embeddings
+Currently there is no smart memory search in src/memory.js.
+Improvement: We can integrate a lightweight local vector embedding model so queries like "wHat are my work priorities?" retrieve memories like "Project I want to focus on is project delta" even when there is no direct keyword overlap.
+
+
+5. Payload oversizing.
+When I was testing random queries, I noticed, for some queries, the payload size exceeds the local models' context length even though it only happens sometimes, and not always. Due to this, the models return failed responses.
+There is a fallback which I implemented. This is a summarize() function which just summarizes the results and gives a generic answer instead of relying on the LLM.
+Improvement: When we get a 400 or 429 error from the LLM, we can trim large raw task arrays and, example when the task counts exceed 50, we can just send the count and first 15 tasks instead of all tasks. It will calculate the approzimate value and give us the result.
+So let's say there are too many tasks objects, what we actually do is 
+When total tasks exceed 50, we:
+Pre calculate the total counts per status(statusCounts).
+Remove the 105 item tasks array.
+Replace it with a 15 lightweight item sampleTasks array containing only key metadata (id, projectId, title, status, assigneeId).
+We can even randomly choose what tasks to send.
+This way we don't hit the limit.
+I ACTUALLY IMPLEMENTED IT THIS WAY, BUT LATER REMOVED IT AS THE MODELS STOPEPD THROWING ERRORS for LARGE PAYLOADS FOR SOME REASONS, AND GAVE ME CORRECT ANSWERS INSTEAD OF USING summarize.
+To actually see this in action, we can use a local model with low context like qwen2.5, or expand the dataset and fill it with 2000+ entries of projects, tasks, employees combined.
