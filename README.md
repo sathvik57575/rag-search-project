@@ -38,6 +38,20 @@ Supported examples are `qwen3:4b` and `llama3.2` through Ollama, or `gemini-3.5-
 
 Optional environment variables are `OLLAMA_URL` and `PORT`. Configure `GEMINI_API_KEY` only when using the Gemini model.
 
+The coordinator route is a separate, read-only workflow with JSON-backed role guardrails. Send a known `employeeId` with the query:
+
+```json
+{
+	"employeeId": "EMP3",
+	"query": "Analyze Project Alpha risks",
+	"model": "llama3.2"
+}
+```
+
+Access roles are stored as `accessRole` on employees in `data/pm-data.json`; job-title values remain in `role`. The permission catalog and role mappings are in `data/roles.json`. Regular employees are limited to their own profile, owned projects, and assigned tasks. Project managers can inspect the broader project-management dataset. Only administrators can mutate task status, task assignment, or project-update risk through `/coordinator`, and each mutation requires `confirmed: true`.
+
+For this JSON-only demo, `employeeId` is supplied in the request body and is therefore spoofable. It is an authorization example, not production authentication. A deployed system must derive identity from a trusted authenticated session or token. The `/agent` route keeps its existing contract and behavior.
+
 ## Architecture
 
 `POST /agent` sends the user goal and all tool schemas to Ollama. The model can create a plan, choose the next function from observed evidence, revise the plan after failures or conflicting data, and stop when it has enough evidence or cannot continue. The response includes `state.plan`, `state.planHistory`, `executionTrace`, failures, and recommendations.

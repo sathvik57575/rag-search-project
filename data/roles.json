@@ -1,0 +1,51 @@
+{
+  "permissionEnum": [
+    "read:own_profile",
+    "read:own_projects",
+    "read:own_tasks",
+    "read:all_projects",
+    "read:all_tasks",
+    "read:all_employees",
+    "read:workload",
+    "write:task_status",
+    "write:task_assignment",
+    "write:project_risk"
+  ],
+  "roles": {
+    "employee": {
+      "description": "May inspect only their own profile, owned projects, and assigned tasks.",
+      "permissions": [
+        "read:own_profile",
+        "read:own_projects",
+        "read:own_tasks"
+      ]
+    },
+    "project_manager": {
+      "description": "May inspect project-management data across the portfolio.",
+      "permissions": [
+        "read:own_profile",
+        "read:own_projects",
+        "read:own_tasks",
+        "read:all_projects",
+        "read:all_tasks",
+        "read:all_employees",
+        "read:workload"
+      ]
+    },
+    "admin": {
+      "description": "May inspect all project-management data and perform confirmed coordinator mutations.",
+      "permissions": [
+        "read:own_profile",
+        "read:own_projects",
+        "read:own_tasks",
+        "read:all_projects",
+        "read:all_tasks",
+        "read:all_employees",
+        "read:workload",
+        "write:task_status",
+        "write:task_assignment",
+        "write:project_risk"
+      ]
+    }
+  }
+}

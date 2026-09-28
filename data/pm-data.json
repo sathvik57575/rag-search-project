@@ -4,145 +4,169 @@
       "id": "EMP1",
       "name": "John Smith",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP2",
       "name": "John Doe",
       "department": "Operations",
-      "role": "Designer"
+      "role": "Designer",
+      "accessRole": "admin"
     },
     {
       "id": "EMP3",
       "name": "Priya Shah",
       "department": "Engineering",
-      "role": "Product Manager"
+      "role": "Product Manager",
+      "accessRole": "project_manager"
     },
     {
       "id": "EMP4",
       "name": "Marcus Lee",
       "department": "Engineering",
-      "role": "QA Engineer"
+      "role": "QA Engineer",
+      "accessRole": "project_manager"
     },
     {
       "id": "EMP5",
       "name": "Team Member 5",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP6",
       "name": "Team Member 6",
       "department": "Operations",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP7",
       "name": "Team Member 7",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP8",
       "name": "Team Member 8",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP9",
       "name": "Team Member 9",
       "department": "Engineering",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP10",
       "name": "Team Member 10",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP11",
       "name": "Team Member 11",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP12",
       "name": "Team Member 12",
       "department": "Operations",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP13",
       "name": "Team Member 13",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP14",
       "name": "Team Member 14",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP15",
       "name": "Team Member 15",
       "department": "Engineering",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP16",
       "name": "Team Member 16",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP17",
       "name": "Team Member 17",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP18",
       "name": "Team Member 18",
       "department": "Operations",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP19",
       "name": "Team Member 19",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP20",
       "name": "Team Member 20",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP21",
       "name": "Team Member 21",
       "department": "Engineering",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     },
     {
       "id": "EMP22",
       "name": "Team Member 22",
       "department": "Operations",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP23",
       "name": "Team Member 23",
       "department": "Engineering",
-      "role": "Engineer"
+      "role": "Engineer",
+      "accessRole": "employee"
     },
     {
       "id": "EMP24",
       "name": "Team Member 24",
       "department": "Operations",
-      "role": "Analyst"
+      "role": "Analyst",
+      "accessRole": "employee"
     }
   ],
   "projects": [
@@ -235,7 +259,7 @@
       "title": "Fix login bug",
       "assigneeId": "EMP1",
       "dueDate": "2026-08-01",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": "TASK2",
@@ -283,7 +307,7 @@
       "title": "Run ABC",
       "assigneeId": "EMP4",
       "dueDate": "2027-09-20",
-      "status": "done"
+      "status": "todo"
     },
     {
       "id": "TASK7",
@@ -479,7 +503,7 @@
       "id": "TASK26",
       "projectId": "PROJ_BETA",
       "title": "Delivery task 26",
-      "assigneeId": "EMP6",
+      "assigneeId": "EMP2",
       "dueDate": "2026-10-20",
       "status": "todo",
       "estimatedHours": 9,
