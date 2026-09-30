@@ -150,9 +150,9 @@ async function testDuplicateRoutingAndSpecialistFailureIsolation() {
       },
       employeeId: 'EMP3',
     });
-    assert.deepStrictEqual(result.selectedAgents, ['project', 'task']);
+    assert.deepStrictEqual(result.selectedAgents, ['project', 'task', 'employee']);
     assert.strictEqual(result.results[0].result.error, 'Specialist failed to complete the request.');
-    assert.strictEqual(result.results.length, 2);
+    assert.strictEqual(result.results.length, 3);
   } finally {
     toolModule.get_project = originalGetProject;
   }

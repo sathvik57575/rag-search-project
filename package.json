@@ -6,12 +6,13 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
-    "test": "npm run test:tools && npm run test:agent && npm run test:planning && npm run test:memory && npm run test:multi-agent",
+    "test": "npm run test:tools && npm run test:agent && npm run test:planning && npm run test:memory && npm run test:multi-agent && npm run test:rag",
     "test:tools": "node -e \"const t=require('./src/toolImpl'); const a=t.get_employee({name:'John'}); if(!a.ambiguous) throw Error('ambiguity failed'); if(t.get_tasks({projectId:'PROJ_ALPHA',overdue:true}).count!==2) throw Error('overdue failed'); if(!t.get_project({name:'Project Missing'}).error) throw Error('missing project failed'); console.log('tool checks passed')\"",
     "test:agent": "node test/goal-agent.test.js",
     "test:planning": "node test/planning-risk.test.js",
     "test:memory": "node test/memory.test.js",
-    "test:multi-agent": "node test/multi-agent.test.js"
+    "test:multi-agent": "node test/multi-agent.test.js",
+    "test:rag": "node test/rag.test.js"
   },
   "dependencies": {
     "axios": "^1.7.7",

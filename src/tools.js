@@ -274,6 +274,22 @@ const toolDefinitions = [
         additionalProperties: false
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_knowledge_base',
+      description: 'Search the RAG knowledge base for company policies, project documentation, SLA rules, escalation standards, and operational guidelines.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Search query or question for the knowledge base' },
+          limit: { type: 'number', description: 'Maximum number of results to return (default 3)' }
+        },
+        required: ['query'],
+        additionalProperties: false
+      }
+    }
   }
 ];
 

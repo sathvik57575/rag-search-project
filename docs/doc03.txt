@@ -1,0 +1,143 @@
+I extended the previous Project Management Agent by adding a RAG knowledge base. I added 3 files in the knowledge folder called
+company_policies.md, project_guidelines.md, sla_and_compliance.md.
+
+I added generic company information in them
+
+POST /coordinator
+        |
+        v
+Validate query and employee ID
+        |
+        v
+Check role and permissions
+        |
+        v
+Choose the source(s)
+      /     \
+     v       v
+Database   Knowledge files
+     \       /
+      v     v
+ Combine results
+        |
+        v
+Create final answer
+        |
+        v
+Return response
+
+
+
+Test cases:
+
+Request 1:
+
+{
+  "query": "at what time should workers report",
+  "model": "llama3.2",
+  "employeeId": "emp2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "knowledge"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "Based on the specialist evidence, the recommended time for workers to report is between 10:00 AM and 4:00 PM local time, as stated in the company's Remote Work Policy.\n\nThere are three relevant results from the specialist evidence:\n\n1. A company policy that states core working hours are from 10:00 AM to 4:00 PM local time.\n2. A project guideline that mentions a task completion rate of under 50% as a condition for a project to be classified as High Risk.\n3. A database record that shows 1 project update with a risk level of \"high\" (though the exact project details are not provided in the evidence).\n\nThe evidence does not provide a specific time for workers to report, only the recommended core working hours. The project guideline mentions a task completion rate, but this is not directly related to the time for reporting.\n\nIt is also worth noting that the specialist evidence does not provide any information on the workload, status, or risks associated with specific employees or projects. Therefore, it is not possible to provide a more specific answer based on this evidence."
+}
+
+
+Request 2:
+
+{
+  "query": "What is our company remote work policy?",
+  "model": "llama3.2",
+  "employeeId": "emp2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "knowledge"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "Our company's remote work policy is outlined in the \"Remote Work Policy\" section of the company policies. According to this policy, full-time employees after completing 90 days of tenure are eligible for up to 3 days per week of remote work. Additionally, the company provides a standard workstation allowance of up to $1,000 every two years.\n\nHowever, there is no direct information on the number of employees currently working remotely or the average number of days worked remotely per week.\n\nThe Task Escalation Policy does not directly address remote work, but it does provide guidance on tasks and their status. Overdue tasks must be flagged for escalation to the Project Manager if they remain incomplete more than 3 business days past their due date.\n\nIt's worth noting that the Task Lifecycle Rules policy does not explicitly address remote work, but it does provide guidance on task status transitions and assignee workload. According to this policy, no single employee should be assigned more than 5 concurrent in-progress tasks.\n\nIn terms of project management, the Project Manager is responsible for ensuring that tasks are completed on time and that remote work is integrated into the project workflow. The Project Manager can also provide guidance on task escalation and status transitions.\n\nOverall, the remote work policy is an important aspect of our company's project management, and it's essential to ensure that remote workers are aware of the policies and procedures in place."
+}
+
+
+
+Request 3:
+
+Making sure previous normal requests are working as usual and nothing broke
+
+{
+  "query": "owner of Project Alpha.",
+  "model": "llama3.2",
+  "employeeId": "emp2"
+}
+
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "Project Alpha metrics:\n\n- Total tasks: 13\n- Done tasks: 4\n- In progress tasks: 1\n- Todo tasks: 8\n- Overdue tasks: 2\n- Completion rate: 31% (based on 4 done tasks out of 13 total tasks)\n- Status: Active\n- Owner: Priya Shah (EMP3)\n- Start date: January 1, 2026\n- Deadline: September 30, 2026\n- Budget: $250,000"
+}
+
+
+Request 4:
+{
+  "query": "What is our task escalation policy",
+  "employeeId": "emp2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "knowledge"
+    ],
+    "collaboration": "single-specialist",
+    "results": [...],
+    "finalAnswer": "The task escalation policy is defined in the 'Task Escalation Policy' section of company_policies.md. According to this policy, any task that remains incomplete more than 3 business days past its due date must be flagged for escalation to the Project Manager. Additionally, if a task's status is changed to 'blocked' for more than 48 hours, the assignee must notify the project owner and document the dependency in a project update."
+}
+
+
+Combining both RAG and normal data fetching to see how they work together
+
+Request 5:
+
+{
+  "query": "What is our task escalation policy and who is owner for project alpha",
+  "model": "llama3.2",
+  "employeeId": "emp2"
+}
+
+{
+    "status": "completed",
+    "coordinator": "Coordinator Agent",
+    "model": "llama3.2",
+    "selectedAgents": [
+        "project",
+        "task",
+        "knowledge"
+    ],
+    "collaboration": "multi-specialist-combined",
+    "results": [...],
+    "finalAnswer": "From company_policies.md, section \"Task Escalation Policy\":\n## Task Escalation Policy\n- Overdue Tasks: Any task that remains incomplete more than 3 business days past its `dueDate` must be flagged for escalation to the Project Manager.\n- Blocked Tasks: If a task status is changed to `blocked` for more than 48 hours, the assignee must notify the project owner and document the dependency in a project update.\n- High Priority Bugs: Severity-1 bugs must be triaged within 4 hours and resolved within 24 hours.\n\nProject Alpha is owned by Priya Shah (EMP3)."
+}
+
+Successfully passing
