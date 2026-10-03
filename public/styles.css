@@ -1,0 +1,92 @@
+:root {
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: #f7f7f7;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; font-size: 15px; line-height: 1.5; }
+a { color: #174f87; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 58px;
+  padding: 10px 24px;
+  border-bottom: 1px solid #ddd;
+  background: #fff;
+}
+.brand { color: #222; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.topbar nav a { color: #333; text-decoration: none; }
+.topbar nav a:hover, .topbar nav a.active { color: #145a96; text-decoration: underline; }
+
+.page-shell { width: min(900px, calc(100% - 32px)); margin: 28px auto; }
+h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.2; }
+h2 { margin: 24px 0 12px; font-size: 21px; }
+h3 { margin: 0 0 4px; font-size: 17px; }
+p { margin-top: 0; }
+.lede { max-width: 700px; margin-bottom: 22px; color: #555; }
+.route-section { margin-top: 28px; }
+.route-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 150px; gap: 12px; align-items: start; padding: 14px 0; border-top: 1px solid #ddd; }
+.route-row:last-child { border-bottom: 1px solid #ddd; }
+.route-number, .method { color: #666; font-size: 12px; }
+.route-copy p:last-child { margin-bottom: 0; color: #555; }
+.route-path { color: #333; font-family: Consolas, monospace; }
+.how-to-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 28px; align-items: start; }
+.route-explanations section { margin: 24px 0; }
+.route-explanations h2, .sample-questions h2 { margin: 0 0 10px; }
+.route-explanations p { color: #444; }
+.sample-questions { border-left: 1px solid #ddd; padding-left: 18px; }
+.sample-questions h3 { margin-top: 18px; font-size: 15px; }
+.sample-questions ul { margin: 0; padding-left: 20px; }
+.sample-questions li { margin: 0 0 8px; }
+.sample-note { margin-top: 18px; color: #555; font-size: 13px; }
+
+.form-page { padding-top: 8px; }
+.form-heading { margin-bottom: 20px; }
+.form-heading h1 { margin-bottom: 8px; }
+.workspace-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; border-top: 1px solid #ddd; padding-top: 20px; }
+.request-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.field { display: flex; flex-direction: column; min-width: 0; gap: 6px; }
+.field-wide { grid-column: 1 / -1; }
+.field > span:first-child { font-weight: 600; }
+.field b, .field small { color: #666; font-size: 11px; font-weight: 400; }
+input[type="text"], textarea, select { width: 100%; padding: 9px; border: 1px solid #bbb; border-radius: 3px; background: #fff; color: #222; font: inherit; }
+textarea { min-height: 110px; resize: vertical; }
+.check-field { display: flex; align-items: flex-start; gap: 8px; }
+.check-field input { margin-top: 5px; }
+.check-field > span:last-child { display: grid; gap: 3px; }
+.form-actions { display: flex; align-items: center; }
+.submit-button { padding: 9px 14px; border: 0; border-radius: 3px; background: #245c86; color: #fff; font: inherit; cursor: pointer; }
+.submit-button:disabled { opacity: 0.6; cursor: wait; }
+.response-panel { min-width: 0; }
+.response-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+.response-head h2 { margin: 0; font-size: 19px; }
+.response-status { color: #555; font-size: 12px; }
+.response-status.is-error { color: #a22; }
+.response-output, .file-content { overflow: auto; padding: 12px; border: 1px solid #ddd; background: #fff; font: 12px/1.5 Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.response-output { min-height: 180px; max-height: 420px; }
+.guideline-document { margin: 24px 0; }
+.guideline-document h2 { margin-bottom: 8px; }
+
+@media (max-width: 700px) {
+  .topbar { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .topbar nav { gap: 8px 16px; }
+  .workspace-grid { grid-template-columns: 1fr; }
+  .how-to-layout { grid-template-columns: 1fr; }
+  .sample-questions { border-top: 1px solid #ddd; border-left: 0; padding: 18px 0 0; }
+}
+
+@media (max-width: 460px) {
+  .page-shell { width: calc(100% - 24px); margin: 20px auto; }
+  .route-row { grid-template-columns: 28px minmax(0, 1fr); }
+  .route-path { grid-column: 2; }
+  .request-form { grid-template-columns: 1fr; }
+  .field-wide { grid-column: auto; }
+}

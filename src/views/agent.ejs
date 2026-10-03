@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/forms.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Project Management</a>
+    <nav aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/how-to-use">How to Use</a>
+      <a href="/data">Data</a>
+      <a href="/guidelines">Company Guidelines</a>
+      <a class="active" href="/agent">Agent</a>
+      <a href="/coordinator">Coordinator</a>
+    </nav>
+  </header>
+
+  <main class="page-shell form-page">
+    <section class="form-heading">
+      <h1>Single agent</h1>
+      <p class="lede">Ask one question. The agent checks relevant project tools and returns an answer.</p>
+    </section>
+
+    <div class="workspace-grid">
+      <form class="request-form" data-api-form data-endpoint="/agent">
+        <label class="field field-wide">
+          <span>Message <b>REQUIRED</b></span>
+          <textarea name="message" rows="5" required placeholder="Who owns the overdue tasks in Project Alpha?"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Model</span>
+          <select name="model">
+            <option value="gemini-3.5-flash-lite" selected>Gemini 3.5 Flash Lite</option>
+            <option value="qwen3:4b">Ollama · qwen3:4b (Unavailable in production)</option>
+            <option value="llama3.2">Ollama · llama3.2 (Unavailable in production)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>User ID <small>OPTIONAL</small></span>
+          <input name="userId" type="text" autocomplete="off" placeholder="e.g. alex">
+        </label>
+        <label class="field">
+          <span>Conversation ID <small>OPTIONAL</small></span>
+          <input name="conversationId" type="text" autocomplete="off" placeholder="e.g. sprint-planning">
+        </label>
+        <label class="check-field field-wide">
+          <input name="confirmed" type="checkbox" value="true">
+          <span class="check-box" aria-hidden="true"></span>
+          <span>Confirm any requested data changes <small>Leave unchecked to receive a confirmation request first.</small></span>
+        </label>
+        <div class="form-actions field-wide">
+          <button class="submit-button" type="submit">Run <span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+
+      <section class="response-panel" aria-labelledby="response-title">
+        <div class="response-head"><div><p class="eyebrow">LIVE RESPONSE</p><h2 id="response-title">Output</h2></div><span class="response-status" data-response-status>READY</span></div>
+        <pre class="response-output" data-response-output aria-live="polite">Your response will appear here.</pre>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

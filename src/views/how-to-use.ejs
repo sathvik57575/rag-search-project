@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Use</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Project Management</a>
+    <nav aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a class="active" href="/how-to-use">How to Use</a>
+      <a href="/data">Data</a>
+      <a href="/guidelines">Company Guidelines</a>
+      <a href="/agent">Agent</a>
+      <a href="/coordinator">Coordinator</a>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <h1>How to Use</h1>
+    <p class="lede">Both routes answer project-management questions, but they organize the work differently.</p>
+
+    <div class="how-to-layout">
+      <div class="route-explanations">
+        <section>
+          <h2>Single agent: <code>/agent</code></h2>
+          <p>This is the original, single-agent workflow. The user sends one message, and the agent interprets the goal and chooses relevant tools, such as looking up a project, finding overdue tasks, or searching company documents. The tools return current data or document excerpts; the agent uses those results as evidence rather than relying only on its general knowledge.</p>
+          <p>A question may require more than one tool call. The agent can inspect a result, decide it needs another lookup, and continue until it has enough information to answer or reaches its execution limit. The response includes the answer and supporting execution details.</p>
+          <p>The optional user ID separates saved memories by user, while the conversation ID keeps recent turns associated with a conversation. Reusing these values lets later requests refer to the same user or discussion. Use this route when one agent can handle the request itself, even if it needs several tools.</p>
+        </section>
+
+        <section>
+          <h2>Multi-agent coordinator: <code>/coordinator</code></h2>
+          <p>This route demonstrates how multiple specialized agents can work together. The Coordinator Agent receives the user's query and an employee ID, then checks the employee's configured access role. Based on keywords and topics in the query, it chooses the specialist agent or agents that should handle it. The current 4 specialist agents are focused on <br>
+          projects, <br>
+          tasks, <br>
+          employees/workload, <br>
+          company policies and guidelines (for RAG knowledge base).</p>
+          <p>A focused query may need one specialist, such as asking for overdue tasks. A broader query may select multiple specialists, such as asking which projects are at risk and who has overdue work. Each selected specialist gathers its part of the evidence; the Coordinator Agent then combines those results into one response. This is how a multi-agent workflow can answer a question that crosses several areas instead of relying on one specialist for everything.</p>
+          <p>If the request is too generic to route reliably, such as “What is the status?”, the coordinator returns a clarification request rather than guessing which specialist to use. Try naming a project, task, employee, or policy area to guide its selection.</p>
+          <p>The employee ID also determines data access. Current seed data has one administrator: <strong>John Doe (EMP2)</strong>. Employees and project managers have different read scopes; only the administrator can change task status, task assignments, or project-update risk. A change requires confirmation: first submit the request, review the confirmation response, then resubmit with the confirmation box checked.
+
+         For testing the RAG knowledge base, the coordinator can route to the knowledge specialist agent to retrieve company policies and guidelines. The agent(s) decide(s) when to use the database tools and when to use RAG, and also are able to use both when a query needs information from both sources.
+        <br>
+        Eg: "What is the company policy on late submissions?" or "Tell me about John smith and remote work policy of this company" </p>
+        </section>
+
+        <section>
+          <h2>Choosing a route</h2>
+          <p>Use <code>/agent</code> for the original single agent to investigate a request through its tools. Use <code>/coordinator</code> to demonstrate the multi-agent design: the Coordinator Agent routes work to Project, Task, Employee/Workload, and Knowledge specialists, then combines their findings. Both forms show the response on the same page.</p>
+        </section>
+      </div>
+
+      <aside class="sample-questions">
+        <h2>Sample questions</h2>
+        <h3>Agent</h3>
+        <ul>
+          <li>Who owns the overdue tasks in Project Alpha?</li>
+          <li>Show Project Alpha's progress and risks.</li>
+          <li>Which tasks are blocked in Project Beta?</li>
+          <li>What does the policy say about overdue tasks?</li>
+          <li>Which projects does Priya Shah own?</li>
+          <li>Remember that Project Alpha is my priority.</li>
+        </ul>
+        <h3>Coordinator</h3>
+        <ul>
+          <li>Analyze Project Alpha's risks.</li>
+          <li>Show my pending tasks.</li>
+          <li>Summarize workload across the team.</li>
+          <li>What is the rule for remote work policy?</li>
+          <li>Tell me about John smith and remote work policy of this company</li>
+          <li>Mark TASK1 done.</li>
+          <li>Assign TASK4 to EMP4.</li>
+        </ul>
+        <p class="sample-note">Coordinator examples also need an employee ID. Use an administrator ID for the change examples.</p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

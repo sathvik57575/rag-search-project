@@ -405,12 +405,13 @@ async function runCoordinator(query, options = {}) {
 
   return {
     status: 'completed',
+    finalAnswer,
     coordinator: 'Coordinator Agent',
     model,
     selectedAgents,
     collaboration: selectedAgents.length > 1 ? 'multi-specialist-combined' : 'single-specialist',
     results,
-    finalAnswer,
+
   };
 }
 

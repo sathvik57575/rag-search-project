@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Company Guidelines</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Project Management</a>
+    <nav aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/how-to-use">How to Use</a>
+      <a href="/data">Data</a>
+      <a class="active" href="/guidelines">Company Guidelines</a>
+      <a href="/agent">Agent</a>
+      <a href="/coordinator">Coordinator</a>
+    </nav>
+  </header>
+  <main class="page-shell form-page">
+    <h1>Company Guidelines</h1>
+    (for a RAG knowledge base, only available in /coordinator route)
+    <% documents.forEach((document) => { %>
+      <section class="guideline-document">
+        <h2><%= document.title %></h2>
+        <pre class="file-content"><%= document.content %></pre>
+      </section>
+    <% }); %>
+  </main>
+</body>
+</html>
