@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upload Documents</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Project Management</a>
+    <nav aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/how-to-use">How to Use</a>
+      <a href="/data">Data</a>
+      <a class="active" href="/upload">Upload</a>
+      <a href="/guidelines">Company Guidelines</a>
+      <a href="/agent">Agent</a>
+      <a href="/coordinator">Coordinator</a>
+    </nav>
+  </header>
+  <main class="page-shell form-page">
+    <h1>Upload a document</h1>
+    <p class="lede">Upload up to five PDF or TXT files at once. They are added to the shared document library, where the Agent can search them alongside company guidelines.</p>
+    <% if (message) { %>
+      <p class="upload-message <%= isError ? 'upload-error' : 'upload-success' %>" role="status"><%= message %></p>
+    <% } %>
+    <% if (successCount > 0) { %>
+      <script>alert('<%= successCount %> file<%= successCount === 1 ? '' : 's' %> successfully uploaded.');</script>
+    <% } %>
+    <form class="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+      <label class="field">
+        <span>Choose PDF or TXT files (max 10 MB each)</span>
+        <input type="file" name="documents" accept=".pdf,.txt,application/pdf,text/plain" multiple required>
+      </label>
+      <button class="submit-button" type="submit">Upload document</button>
+    </form>
+  </main>
+</body>
+</html>

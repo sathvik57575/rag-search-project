@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const memory = require('./memory');
 const rag = require('./rag');
+const documentRag = require('./documentRag');
 
 const dataPath =
   process.env.PM_DATA_PATH ||
@@ -696,6 +697,10 @@ function search_knowledge_base({ query, limit } = {}) {
   return rag.searchKnowledgeBase(query, limit);
 }
 
+function search_documents({ query, limit } = {}) {
+  return documentRag.searchDocuments(query, limit);
+}
+
 module.exports = {
   createContext,
   get_employee,
@@ -718,4 +723,5 @@ module.exports = {
   forget,
   search_memory,
   search_knowledge_base,
+  search_documents,
 };

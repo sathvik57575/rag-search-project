@@ -278,13 +278,13 @@ const toolDefinitions = [
   {
     type: 'function',
     function: {
-      name: 'search_knowledge_base',
-      description: 'Search the RAG knowledge base for company policies, project documentation, SLA rules, escalation standards, and operational guidelines.',
+      name: 'search_documents',
+      description: 'Search uploaded shared documents and the existing /knowledge files using semantic embeddings. Use this when the answer may be in a PDF, text file, policy, guideline, or other document. It returns only relevant passages and their source.',
       parameters: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'Search query or question for the knowledge base' },
-          limit: { type: 'number', description: 'Maximum number of results to return (default 3)' }
+          query: { type: 'string', description: 'Question or search text to find in uploaded or existing documents' },
+          limit: { type: 'number', description: 'Maximum number of results to return (default 5)' }
         },
         required: ['query'],
         additionalProperties: false

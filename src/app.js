@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const agentRouter = require('./routes/agent');
 const coordinatorRouter = require('./routes/coordinator');
+const uploadRouter = require('./routes/upload');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use('/agent', agentRouter);
 app.use('/coordinator', coordinatorRouter);
+app.use('/upload', uploadRouter);
 
 app.get('/', (req, res) => {
   res.render('home', { page: 'home' });

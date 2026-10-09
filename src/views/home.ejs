@@ -13,6 +13,7 @@
       <a class="active" href="/">Home</a>
       <a href="/how-to-use">How to Use</a>
       <a href="/data">Data</a>
+      <a href="/upload">Upload</a>
       <a href="/guidelines">Company Guidelines</a>
       <a href="/agent">Agent</a>
       <a href="/coordinator">Coordinator</a>
@@ -46,24 +47,30 @@
 
       <article class="route-row">
         <div class="route-number">04</div>
+        <div class="route-copy"><p class="method method-get">GET · POST</p><h3>Document upload</h3><p>Upload PDF and TXT files to the shared semantic-search library.</p></div>
+        <code class="route-path">/upload</code>
+      </article>
+
+      <article class="route-row">
+        <div class="route-number">05</div>
         <div class="route-copy"><p class="method method-get">GET</p><h3>Company guidelines</h3><p>Read the policy, project guideline, and SLA documents. This is added because the tutor gave me the task of extending the project by adding a small RAG knowledge base (project docs, company policies, guidelines etc). The agent(s) decide(s) when to use the database tools and when to use RAG, and also are able to use both when a query needs information from both sources.</p></div>
         <code class="route-path">/guidelines</code>
       </article>
 
       <article class="route-row">
-        <div class="route-number">05</div>
+        <div class="route-number">06</div>
         <div class="route-copy"><p class="method method-post">GET FORM · POST API</p><h3>Single agent</h3><p>This is the original Ai agent I built.  Handles one request at a time, choosing tools to look up project, task, employee, risk, and memory data before answering.</p></div>
         <code class="route-path">/agent</code>
       </article>
 
       <article class="route-row">
-        <div class="route-number">06</div>
+        <div class="route-number">07</div>
         <div class="route-copy"><p class="method method-post">GET FORM · POST API</p><h3>Multi-agent coordinator</h3><p>This is the route which executes multiple specialized agents to perform a task. Routes a request to project, task, employee, and knowledge specialists, then combines their findings. Access depends on the supplied employee ID.</p></div>
         <code class="route-path">/coordinator</code>
       </article>
 
       <article class="route-row health-row">
-        <div class="route-number">07</div>
+        <div class="route-number">08</div>
         <div class="route-copy"><p class="method method-get">GET</p><h3>Health check</h3><p>Testing to see if the app is working properly.</p></div>
         <code class="route-path">/health</code>
       </article>

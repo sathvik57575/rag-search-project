@@ -1,6 +1,6 @@
  # Project Management Agent
 
-This project demonstrates a goal-oriented project-management agent using local Ollama tool calling. It uses exact lookups and analysis over `data/pm-data.json`; it does not use embeddings, chunking, vector search, or PostgreSQL.
+This project demonstrates a project-management agent and a separate multi-agent coordinator. Project and task tools use `data/pm-data.json`. The single-agent route can also search shared uploaded documents and the existing `/knowledge` files using Gemini embeddings stored in Neon PostgreSQL with pgvector. The coordinator keeps its existing JSON tools and local `/knowledge` search.
 
 ## Run
 
@@ -36,9 +36,17 @@ The default model is `qwen3:4b`. Choose a model per request with the optional `m
 
 Supported examples are `qwen3:4b` and `llama3.2` through Ollama, or `gemini-3.5-flash-lite` through Gemini when `GEMINI_API_KEY` is configured. The request value takes precedence; omitting `model` uses `qwen3:4b`.
 
-Optional environment variables are `OLLAMA_URL` and `PORT`. Configure `GEMINI_API_KEY` only when using the Gemini model.
+Optional environment variables are `OLLAMA_URL`, `PORT`, and `GEMINI_EMBEDDING_MODEL`. Configure `GEMINI_API_KEY` when using Gemini for chat or when indexing/searching documents.
 
-The coordinator route is a separate, read-only workflow with JSON-backed role guardrails. Send a known `employeeId` with the query:
+## Document uploads
+
+Create a Neon PostgreSQL database with the `vector` extension available. Add its connection string to the local environment as `DATABASE_URL` (include SSL settings from Neon). The app creates its document tables and enables `vector` the first time upload or semantic document search is used. If the Neon role cannot create extensions, enable `vector` once in the Neon SQL Editor.
+
+The `GET /upload` page accepts up to five PDF or TXT files per request, each up to 10 MB. `POST /upload` extracts text, chunks it, generates embeddings with `GEMINI_EMBEDDING_MODEL` (default `gemini-embedding-001`), and stores each original file, its chunks, and vectors in Neon. `GEMINI_API_KEY` is needed for embeddings even when the chat model uses Ollama. Scanned-image PDFs are not OCR'd.
+
+Uploads and answers are shared with all visitors; there is no authentication or uploader ID. Existing files under `/knowledge` are indexed into the same vector corpus the first time `/agent` document search or upload runs, while the files remain in the repository. `/agent` uses semantic document search when relevant and keeps its existing JSON tools for project and task questions. `/coordinator` is unchanged and does not search uploaded files.
+
+The coordinator route is a separate multi-agent workflow with JSON-backed role guardrails. Send a known `employeeId` with the query:
 
 ```json
 {
@@ -54,9 +62,9 @@ For this JSON-only demo, `employeeId` is supplied in the request body and is the
 
 ## Architecture
 
-`POST /agent` sends the user goal and all tool schemas to Ollama. The model can create a plan, choose the next function from observed evidence, revise the plan after failures or conflicting data, and stop when it has enough evidence or cannot continue. The response includes `state.plan`, `state.planHistory`, `executionTrace`, failures, and recommendations.
+`POST /agent` sends the user goal and its available tool schemas to the configured chat model. The single agent can create a plan, choose the next function from observed evidence, revise the plan after failures or conflicting data, and stop when it has enough evidence or cannot continue. It can use `search_documents` for relevant uploaded and `/knowledge` passages, and the existing tools for current project data. The response includes `state.plan`, `state.planHistory`, `executionTrace`, failures, and recommendations.
 
-Available tools include `create_plan`, `replan`, `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `get_project_metrics`, `get_project_updates`, `find_project_risks`, `update_task_status`, `assign_task`, `create_recommendation`, `remember`, `forget`, and `search_memory`.
+Available tools include `create_plan`, `replan`, `get_employee`, `get_project`, `get_projects`, `get_tasks`, `get_task`, `get_project_metrics`, `get_project_updates`, `find_project_risks`, `update_task_status`, `assign_task`, `create_recommendation`, `remember`, `forget`, `search_memory`, and `search_documents`.
 
 Each request gets an isolated context containing tool results, failures, and recommendations. Repeated identical calls are served from the request cache. Status and assignment changes stop with `pendingConfirmation`; repeat the request with `"confirmed": true` to authorize the mutation.
 

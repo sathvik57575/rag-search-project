@@ -13,6 +13,7 @@
       <a href="/">Home</a>
       <a href="/how-to-use">How to Use</a>
       <a href="/data">Data</a>
+      <a href="/upload">Upload</a>
       <a class="active" href="/guidelines">Company Guidelines</a>
       <a href="/agent">Agent</a>
       <a href="/coordinator">Coordinator</a>
@@ -20,7 +21,7 @@
   </header>
   <main class="page-shell form-page">
     <h1>Company Guidelines</h1>
-    (for a RAG knowledge base, only available in /coordinator route)
+    <p class="lede">The Coordinator keeps its existing knowledge search. The single Agent can also search these documents with uploaded files.</p>
     <% documents.forEach((document) => { %>
       <section class="guideline-document">
         <h2><%= document.title %></h2>

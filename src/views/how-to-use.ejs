@@ -13,6 +13,7 @@
       <a href="/">Home</a>
       <a class="active" href="/how-to-use">How to Use</a>
       <a href="/data">Data</a>
+      <a href="/upload">Upload</a>
       <a href="/guidelines">Company Guidelines</a>
       <a href="/agent">Agent</a>
       <a href="/coordinator">Coordinator</a>
@@ -27,7 +28,7 @@
       <div class="route-explanations">
         <section>
           <h2>Single agent: <code>/agent</code></h2>
-          <p>This is the original, single-agent workflow. The user sends one message, and the agent interprets the goal and chooses relevant tools, such as looking up a project, finding overdue tasks, or searching company documents. The tools return current data or document excerpts; the agent uses those results as evidence rather than relying only on its general knowledge.</p>
+          <p>This is the original, single-agent workflow. The user sends one message, and the agent interprets the goal and chooses relevant tools, such as looking up a project, finding overdue tasks, or semantically searching uploaded files and company documents. The tools return current data or document excerpts; the agent uses those results as evidence rather than relying only on its general knowledge.</p>
           <p>A question may require more than one tool call. The agent can inspect a result, decide it needs another lookup, and continue until it has enough information to answer or reaches its execution limit. The response includes the answer and supporting execution details.</p>
           <p>The optional user ID separates saved memories by user, while the conversation ID keeps recent turns associated with a conversation. Reusing these values lets later requests refer to the same user or discussion. Use this route when one agent can handle the request itself, even if it needs several tools.</p>
         </section>
