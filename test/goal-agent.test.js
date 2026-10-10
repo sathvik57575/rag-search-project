@@ -78,6 +78,45 @@ async function testFailureRecoveryAndDuplicateAvoidance() {
   assert(result.finalAnswer.includes('pending'));
 }
 
+async function testDocumentAnswerIncludesRetrievedCitations() {
+  const originalSearchDocuments = tools.search_documents;
+  tools.search_documents = async ({ query }) => (query === 'leavemealone'
+    ? {
+      count: 2,
+      results: [
+        { source: 'sla_and_compliance.md', content: 'Priority response information.', relevanceScore: 0.60 },
+        { source: 'GTA_Vice_City_Cheat_Codes.pdf', content: 'LEAVEMEALONE removes the wanted level.', relevanceScore: 0.58 },
+      ],
+    }
+    : {
+      count: 2,
+      results: [
+        { source: 'GTA_Vice_City_Cheat_Codes.pdf', content: 'LEAVEMEALONE removes the wanted level.', relevanceScore: 0.68 },
+        { source: 'company_policies.md', content: 'Weekly project update information.', relevanceScore: 0.59 },
+      ],
+    });
+
+  try {
+    const responses = [
+      functionResponse('search_documents', { query: 'leavemealone' }, 'sig-1'),
+      functionResponse('search_documents', { query: 'leavemealone cheat code' }, 'sig-2'),
+      textResponse('LEAVEMEALONE removes the wanted level in GTA: Vice City.'),
+    ];
+    const result = await withGeminiResponses(responses, () => runAgent(
+      'What is the cheat code leavemealone used for?',
+      { model: 'gemini-3.5-flash-lite' },
+    ));
+
+    assert.strictEqual(result.citations.length, 1);
+    assert.strictEqual(result.citations[0].source, 'GTA_Vice_City_Cheat_Codes.pdf');
+    assert(result.finalAnswer.includes('Source: GTA_Vice_City_Cheat_Codes.pdf'));
+    assert(!result.finalAnswer.includes('sla_and_compliance.md'));
+    assert(!result.finalAnswer.includes('company_policies.md'));
+  } finally {
+    tools.search_documents = originalSearchDocuments;
+  }
+}
+
 async function testMutationConfirmation() {
   const responses = [
     functionResponse('update_task_status', { taskId: 'TASK1', status: 'done', reason: 'Verified complete' }, 'sig-1')
@@ -154,6 +193,7 @@ function testToolContextIsolationAndConflictingData() {
 (async () => {
   await testComplexGoal();
   await testFailureRecoveryAndDuplicateAvoidance();
+  await testDocumentAnswerIncludesRetrievedCitations();
   await testMutationConfirmation();
   await testProjectUpdateRiskMutation();
   await testAmbiguousInput();

@@ -11,7 +11,7 @@ const MAX_ITERATIONS = 15;
 
 const systemMessage = {
   role: 'system',
-  content: 'You are a goal-oriented project management agent. For any query about projects, employees, tasks, metrics, or ownership, ALWAYS call the appropriate tool (such as get_project, get_projects, get_employee, get_tasks) to inspect system data before answering or asking for clarification. For questions about uploaded files, company policies, guidelines, or other documents, use search_documents and base document claims on its relevant passages. For mixed questions, use both document search and the relevant project-data tools. If document search returns no relevant passages, say so rather than inventing document facts. Do not invent project records or assume data is missing without querying the tools first. Create a dynamic plan for multi-project investigations. Evaluate every tool result. If a tool returns an error or ambiguous results, refine the query or ask the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Save information only when the user explicitly asks to remember it.'
+  content: 'You are a goal-oriented project management agent. For any query about projects, employees, tasks, metrics, or ownership, ALWAYS call the appropriate tool (such as get_project, get_projects, get_employee, get_tasks) to inspect system data before answering or asking for clarification. For questions about uploaded files, company policies, guidelines, or other documents, use search_documents and base document claims on its relevant passages. Cite only the most relevant source filename from the retrieved results; do not list unrelated search results or invent source names or page numbers. For mixed questions, use both document search and the relevant project-data tools. If document search returns no relevant passages, say so rather than inventing document facts. Do not invent project records or assume data is missing without querying the tools first. Create a dynamic plan for multi-project investigations. Evaluate every tool result. If a tool returns an error or ambiguous results, refine the query or ask the user to clarify. Mutations require confirmation from the application. Treat conversation context as short-term and user memories as long-term. Save information only when the user explicitly asks to remember it.'
 };
 
 async function askModel(messages, model, options = {}) {
@@ -147,6 +147,32 @@ function parseArguments(rawArguments) {
   if (!rawArguments) return {};
   if (typeof rawArguments === 'object') return rawArguments;
   return JSON.parse(rawArguments);
+}
+
+function collectDocumentCitation(log) {
+  let bestMatch = null;
+
+  for (const entry of log) {
+    if (entry.tool !== 'search_documents') continue;
+    let result = entry.result;
+    while (result && result.cached && result.result) result = result.result;
+    if (!result || !Array.isArray(result.results)) continue;
+
+    for (const item of result.results) {
+      if (!item.source || !item.content) continue;
+      const score = Number(item.relevanceScore) || 0;
+      if (!bestMatch || score > bestMatch.score) {
+        bestMatch = { source: item.source, score };
+      }
+    }
+  }
+
+  return bestMatch ? { source: bestMatch.source } : null;
+}
+
+function appendDocumentCitation(answer, citation) {
+  if (!citation) return answer;
+  return `${answer}\n\nSource: ${citation.source}`;
 }
 
 function validateToolArguments(toolName, argumentsObject) {
@@ -392,16 +418,19 @@ async function runAgent(userMessage, options = {}) {
     const calls = assistantMessage.tool_calls || [];
 
     if (calls.length === 0) {
+      const citation = collectDocumentCitation(log);
+      const finalAnswer = appendDocumentCitation(assistantMessage.content || '', citation);
       if (hasUserSession) {
         memory.recordTurn({
           userId: memorySession.userId,
           conversationId: memorySession.conversationId,
           userMessage,
-          assistantMessage: assistantMessage.content || '',
+          assistantMessage: finalAnswer,
         });
       }
       return {
-        finalAnswer: assistantMessage.content || '',
+        finalAnswer,
+        ...(citation ? { citations: [citation] } : {}),
         model,
         iterations: iteration,
         log,
